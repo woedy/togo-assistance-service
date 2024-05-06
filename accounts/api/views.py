@@ -10,8 +10,17 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.api.custom_jwt import CustomTokenObtainPairSerializer
 from accounts.api.serializers import UserRegistrationSerializer, PasswordResetSerializer
-from tas_project.utils import generate_email_token
+from activities.models import AllActivity
+from billing.models import Billing
+from clients.models import Client
+from commercial.models import Commercial
+from communications.models import PrivateChatRoom
+from human_resources.models import HumanResource
+from operations.models import Operation
+from secretary.models import Secretary
+from tas_project.utils import generate_email_token, generate_random_otp_code
 
 User = get_user_model()
 
@@ -20,7 +29,223 @@ User = get_user_model()
 @permission_classes([])
 @authentication_classes([])
 def register_user(request):
+    payload = {}
+    data = {}
+    errors = {}
 
+    if request.method == 'POST':
+        email = request.data.get('email', "").lower()
+        first_name = request.data.get('first_name', "")
+        last_name = request.data.get('last_name', "")
+        department = request.data.get('department', "")
+        phone = request.data.get('phone', "")
+        photo = request.FILES.get('photo')
+        password = request.data.get('password', "Tas@123!_")
+        password2 = request.data.get('password2', "Tas@123!_")
+
+        if not email:
+            errors['email'] = ['User Email is required.']
+        elif not is_valid_email(email):
+            errors['email'] = ['Valid email required.']
+        elif check_email_exist(email):
+            errors['email'] = ['Email already exists in our database.']
+
+        if not first_name:
+            errors['first_name'] = ['First Name is required.']
+
+        if not phone:
+            errors['phone'] = ['Phone number is required.']
+
+        if not last_name:
+            errors['last_name'] = ['Last Name is required.']
+
+        if not password:
+            errors['password'] = ['Password is required.']
+
+        if not password2:
+            errors['password2'] = ['Password2 is required.']
+
+        if password != password2:
+            errors['password'] = ['Passwords dont match.']
+
+        if not is_valid_password(password):
+            errors['password'] = [
+                'Password must be at least 8 characters long\n- Must include at least one uppercase letter,\n- One lowercase letter, one digit,\n- And one special character']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            data["user_id"] = user.user_id
+            data["email"] = user.email
+            data["first_name"] = user.first_name
+            data["last_name"] = user.last_name
+
+            room =  PrivateChatRoom.objects.create(
+                user=user
+            )
+
+            if department == "SECRETARY":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                secretary_profile = Secretary.objects.create(
+                    user=user,
+                    room=room
+                )
+                data["room_id"] = secretary_profile.room.room_id
+                data["secretary_id"] = secretary_profile.secretary_id
+
+            if department == "HUMAN RESOURCES":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                hr_profile = HumanResource.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = hr_profile.room.room_id
+                data["hr_id"] = hr_profile.hr_id
+
+            if department == "OPERATIONS":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                operations_profile = Operation.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = operations_profile.room.room_id
+                data["operations_id"] = operations_profile.operations_id
+
+            if department == "COMMERCIAL":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                commercial_profile = Commercial.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = commercial_profile.room.room_id
+                data["commercial_id"] = commercial_profile.commercial_id
+
+            if department == "BILLING":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                accounts_profile = Billing.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = accounts_profile.room.room_id
+                data["billing_id"] = accounts_profile.billing_id
+
+
+        # Generate token using the custom serializer
+        serializer = CustomTokenObtainPairSerializer()
+        _token = serializer.get_token(user)
+
+        token = {
+            'refresh': str(_token),
+            'access': str(_token.access_token),
+        }
+
+        data['token'] = token
+
+        email_token = generate_email_token()
+
+        user = User.objects.get(email=email)
+        user.email_token = email_token
+        user.save()
+
+        context = {
+            'email_token': email_token,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name
+        }
+
+        txt_ = get_template("registration/emails/verify.html").render(context)
+        html_ = get_template("registration/emails/verify.txt").render(context)
+
+        subject = 'EMAIL CONFIRMATION CODE'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [user.email]
+
+        # # Use Celery chain to execute tasks in sequence
+        # email_chain = chain(
+        #     send_generic_email.si(subject, txt_, from_email, recipient_list, html_),
+        # )
+        # # Execute the Celery chain asynchronously
+        # email_chain.apply_async()
+
+        send_mail(
+            subject,
+            txt_,
+            from_email,
+            recipient_list,
+            html_message=html_,
+            fail_silently=False,
+        )
+
+        #
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="User Registration",
+            body=user.email + " Just created an account."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([])
+@authentication_classes([])
+def register_user2222(request):
     payload = {}
     data = {}
     errors = {}
@@ -30,11 +255,10 @@ def register_user(request):
         full_name = request.data.get('full_name', "")
         phone = request.data.get('phone', "")
         photo = request.FILES.get('photo')
-        #photo = request.data.get('photo', "")
+        # photo = request.data.get('photo', "")
         country = request.data.get('country', "")
         password = request.data.get('password', "")
         password2 = request.data.get('password2', "")
-
 
         if not email:
             errors['email'] = ['User Email is required.']
@@ -52,7 +276,6 @@ def register_user(request):
         if not country:
             errors['country'] = ['Country is required.']
 
-
         if not password:
             errors['password'] = ['Password is required.']
 
@@ -63,7 +286,8 @@ def register_user(request):
             errors['password'] = ['Passwords dont match.']
 
         if not is_valid_password(password):
-            errors['password'] = ['Password must be at least 8 characters long\n- Must include at least one uppercase letter,\n- One lowercase letter, one digit,\n- And one special character']
+            errors['password'] = [
+                'Password must be at least 8 characters long\n- Must include at least one uppercase letter,\n- One lowercase letter, one digit,\n- And one special character']
 
         if errors:
             payload['message'] = "Errors"
@@ -115,8 +339,6 @@ def register_user(request):
         from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = [user.email]
 
-
-
         # # Use Celery chain to execute tasks in sequence
         # email_chain = chain(
         #     send_generic_email.si(subject, txt_, from_email, recipient_list, html_),
@@ -133,9 +355,7 @@ def register_user(request):
             fail_silently=False,
         )
 
-
-
-#
+        #
         new_activity = AllActivity.objects.create(
             user=user,
             subject="User Registration",
@@ -153,14 +373,12 @@ def register_user(request):
 @permission_classes([])
 @authentication_classes([])
 def remove_user_view(request):
-
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
         user_id = request.data.get('user_id', "")
-
 
         if not user_id:
             errors['user_id'] = ['User ID is required.']
@@ -189,7 +407,6 @@ def remove_user_view(request):
         payload['data'] = data
 
     return Response(payload)
-
 
 
 @api_view(['POST', ])
@@ -234,11 +451,6 @@ def verify_user_email(request):
         return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        user_profile = UserProfile.objects.get(user=user)
-    except UserProfile.DoesNotExist:
-        user_profile = UserProfile.objects.create(user=user)
-
-    try:
         token = Token.objects.get(user=user)
     except Token.DoesNotExist:
         token = Token.objects.create(user=user)
@@ -249,8 +461,6 @@ def verify_user_email(request):
 
     data["user_id"] = user.user_id
     data["email"] = user.email
-    data["full_name"] = user.full_name
-    data["token"] = token.key
 
     payload['message'] = "Successful"
     payload['data'] = data
@@ -265,8 +475,6 @@ def verify_user_email(request):
     return Response(payload, status=status.HTTP_200_OK)
 
 
-
-
 @api_view(['POST', ])
 @permission_classes([AllowAny])
 @authentication_classes([])
@@ -275,7 +483,6 @@ def resend_email_verification(request):
     data = {}
     errors = {}
     email_errors = []
-
 
     email = request.data.get('email', '').lower()
 
@@ -304,7 +511,7 @@ def resend_email_verification(request):
     context = {
         'email_token': otp_code,
         'email': user.email,
-        'full_name': user.full_name
+        'first_name': user.first_name
     }
 
     txt_ = get_template("registration/emails/verify.txt").render(context)
@@ -330,7 +537,7 @@ def resend_email_verification(request):
         fail_silently=False,
     )
 
-    data["otp_code"] = otp_code
+    #data["otp_code"] = otp_code
     data["emai"] = user.email
     data["user_id"] = user.user_id
 
@@ -347,9 +554,7 @@ def resend_email_verification(request):
     return Response(payload, status=status.HTTP_200_OK)
 
 
-
-
-class UserLogin(APIView):
+class UserLoginSecretary(APIView):
     authentication_classes = []
     permission_classes = []
 
@@ -357,7 +562,6 @@ class UserLogin(APIView):
         payload = {}
         data = {}
         errors = {}
-
 
         email = request.data.get('email', '').lower()
         password = request.data.get('password', '')
@@ -377,8 +581,6 @@ class UserLogin(APIView):
         except User.DoesNotExist:
             errors['email'] = ['User does not exist.']
 
-
-
         if qs.exists():
             not_active = qs.filter(email_verified=False)
             if not_active:
@@ -389,17 +591,13 @@ class UserLogin(APIView):
 
         user = authenticate(email=email, password=password)
 
-
         if not user:
             errors['email'] = ['Invalid Credentials']
-
-
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
-
 
         try:
             token = Token.objects.get(user=user)
@@ -407,12 +605,12 @@ class UserLogin(APIView):
             token = Token.objects.create(user=user)
 
         try:
-            user_profile = UserProfile.objects.get(user=user)
+            secretary_profile = UserProfile.objects.get(user=user)
         except UserProfile.DoesNotExist:
-            user_profile = UserProfile.objects.create(user=user)
+            secretary_profile = UserProfile.objects.create(user=user)
 
-        user_profile.active = True
-        user_profile.save()
+        secretary_profile.active = True
+        secretary_profile.save()
 
         user.fcm_token = fcm_token
         user.save()
@@ -438,8 +636,89 @@ class UserLogin(APIView):
         return Response(payload, status=status.HTTP_200_OK)
 
 
-def check_password(email, password):
+class UserLogin(APIView):
+    authentication_classes = []
+    permission_classes = []
 
+    def post(self, request):
+        payload = {}
+        data = {}
+        errors = {}
+
+        email = request.data.get('email', '').lower()
+        password = request.data.get('password', '')
+        fcm_token = request.data.get('fcm_token', '')
+
+        if not email:
+            errors['email'] = ['Email is required.']
+
+        if not password:
+            errors['password'] = ['Password is required.']
+
+        if not fcm_token:
+            errors['fcm_token'] = ['FCM device token is required.']
+
+        try:
+            qs = User.objects.filter(email=email)
+        except User.DoesNotExist:
+            errors['email'] = ['User does not exist.']
+
+        if qs.exists():
+            not_active = qs.filter(email_verified=False)
+            if not_active:
+                errors['email'] = ["Please check your email to confirm your account or resend confirmation email."]
+
+        if not check_password(email, password):
+            errors['password'] = ['Invalid Credentials']
+
+        user = authenticate(email=email, password=password)
+
+        if not user:
+            errors['email'] = ['Invalid Credentials']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+        # Generate token using the custom serializer
+        serializer = CustomTokenObtainPairSerializer()
+        _token = serializer.get_token(user)
+
+        token = {
+            'refresh': str(_token),
+            'access': str(_token.access_token),
+        }
+
+
+
+        user.fcm_token = fcm_token
+        user.save()
+
+        data["user_id"] = user.user_id
+        data["email"] = user.email
+        data["first_name"] = user.first_name
+        data["last_name"] = user.last_name
+        data["department"] = user.department
+        data["phone"] = user.phone
+        data["photo"] = user.photo.url
+        data['token'] = token
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="User Login",
+            body=user.email + " Just logged in."
+        )
+        new_activity.save()
+
+        return Response(payload, status=status.HTTP_200_OK)
+
+
+def check_password(email, password):
     try:
         user = User.objects.get(email=email)
         return user.check_password(password)
@@ -447,11 +726,8 @@ def check_password(email, password):
         return False
 
 
-
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
-
-
 
     def post(self, request, *args, **kwargs):
         payload = {}
@@ -478,7 +754,6 @@ class PasswordResetView(generics.GenericAPIView):
                 payload['errors'] = errors
                 return Response(payload, status=status.HTTP_404_NOT_FOUND)
 
-
         user = User.objects.filter(email=email).first()
         otp_code = generate_random_otp_code()
         user.otp_code = otp_code
@@ -487,7 +762,8 @@ class PasswordResetView(generics.GenericAPIView):
         context = {
             'otp_code': otp_code,
             'email': user.email,
-            'full_name': user.full_name
+            'first_name': user.first_name,
+            'last_name': user.last_name
         }
 
         txt_ = get_template("registration/emails/send_otp.txt").render(context)
@@ -513,7 +789,7 @@ class PasswordResetView(generics.GenericAPIView):
             fail_silently=False,
         )
 
-        data["otp_code"] = otp_code
+        #data["otp_code"] = otp_code
         data["email"] = user.email
         data["user_id"] = user.user_id
 
@@ -528,7 +804,6 @@ class PasswordResetView(generics.GenericAPIView):
         payload['data'] = data
 
         return Response(payload, status=status.HTTP_200_OK)
-
 
 
 @api_view(['POST', ])
@@ -576,7 +851,6 @@ def confirm_otp_password_view(request):
     return Response(payload, status=status.HTTP_200_OK)
 
 
-
 @api_view(['POST', ])
 @permission_classes([AllowAny])
 @authentication_classes([])
@@ -585,7 +859,6 @@ def resend_password_otp(request):
     data = {}
     errors = {}
     email_errors = []
-
 
     email = request.data.get('email', '').lower()
 
@@ -614,7 +887,8 @@ def resend_password_otp(request):
     context = {
         'otp_code': otp_code,
         'email': user.email,
-        'full_name': user.full_name
+        'first_name': user.first_name,
+        'last_name': user.last_name
     }
 
     txt_ = get_template("registration/emails/send_otp.txt").render(context)
@@ -640,7 +914,7 @@ def resend_password_otp(request):
         fail_silently=False,
     )
 
-    data["otp_code"] = otp_code
+    #data["otp_code"] = otp_code
     data["emai"] = user.email
     data["user_id"] = user.user_id
 
@@ -657,7 +931,6 @@ def resend_password_otp(request):
     return Response(payload, status=status.HTTP_200_OK)
 
 
-
 @api_view(['POST', ])
 @permission_classes([AllowAny])
 @authentication_classes([])
@@ -671,8 +944,6 @@ def new_password_reset_view(request):
     email = request.data.get('email', '0').lower()
     new_password = request.data.get('new_password')
     new_password2 = request.data.get('new_password2')
-
-
 
     if not email:
         email_errors.append('Email is required.')
@@ -691,7 +962,6 @@ def new_password_reset_view(request):
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_404_NOT_FOUND)
 
-
     if not new_password:
         password_errors.append('Password required.')
         if password_errors:
@@ -699,7 +969,6 @@ def new_password_reset_view(request):
             payload['message'] = "Error"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_404_NOT_FOUND)
-
 
     if new_password != new_password2:
         password_errors.append('Password don\'t match.')
@@ -716,22 +985,23 @@ def new_password_reset_view(request):
     data['email'] = user.email
     data['user_id'] = user.user_id
 
-
     payload['message'] = "Successful, Password reset successfully."
     payload['data'] = data
 
     return Response(payload, status=status.HTTP_200_OK)
 
 
-
-
-
-
-
 def check_email_exist(email):
-
     qs = User.objects.filter(email=email)
     if qs.exists():
+        return True
+    else:
+        return False
+
+
+def check_secretary(email):
+    qs = User.objects.filter(email=email)
+    if qs.department == "SECRETARY":
         return True
     else:
         return False
@@ -770,4 +1040,3 @@ def is_valid_password(password):
         return False
 
     return True
-

@@ -58,7 +58,16 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 
     'accounts',
-    'activities'
+    'activities',
+    'administrative',
+    'human_resources',
+    'logistics',
+    'billing',
+    'operations',
+    'commercial',
+    'clients',
+    'communications',
+    'secretary'
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -103,25 +112,25 @@ ASGI_APPLICATION = "tas_project.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'tas_postgres',
-#         'USER': 'tas_postgres',
-#         'PASSWORD': 'tas_postgres',
-#         'HOST': 'db',
-#         'PORT': 5432,
-#      }
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
 # }
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'tas_postgres',
+        'USER': 'tas_postgres',
+        'PASSWORD': 'tas_postgres',
+        'HOST': 'db',
+        'PORT': 5432,
+     }
+}
 
 
 CELERY_BROKER_URL = "redis://redis:6379"

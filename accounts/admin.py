@@ -1,22 +1,22 @@
 from django.contrib import admin
-from django.contrib.auth.models import Group
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group
 
-from accounts.forms import UserAdminChangeForm, UserAdminCreationForm
+from accounts.forms import UserAdminCreationForm, UserAdminChangeForm
 
 User = get_user_model()
 
+# Register your models here.
 class UserAdmin(BaseUserAdmin):
     form = UserAdminChangeForm
     add_form = UserAdminCreationForm
 
-    list_display = ('id', 'user_id', 'email',  'first_name', 'last_name', 'admin','email_verified')
+    list_display = ('id', 'user_id', 'email', 'first_name', 'last_name', 'otp_code', 'email_token', 'department', 'email_verified', 'admin',)
     list_filter = ('admin', 'staff', 'is_active')
 
     fieldsets = (
-        (None, {'fields': ('email',  'first_name', 'last_name','fcm_token','is_online', 'email_token', 'user_type', 'availability_interval', 'email_verified', 'password')}),
+        (None, {'fields': ('email', 'first_name', 'last_name','fcm_token', 'otp_code', 'email_token','department', 'email_verified', 'password')}),
         # ('Full name', {'fields': ()}),
         ('Permissions', {'fields': ('admin', 'staff', 'is_active',)}),
     )
@@ -28,7 +28,7 @@ class UserAdmin(BaseUserAdmin):
          ),
     )
 
-    search_fields = ('email',  'first_name', 'last_name',)
+    search_fields = ('email', 'first_name', 'last_name',)
     ordering = ('email',)
     filter_horizontal = ()
 
