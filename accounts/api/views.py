@@ -2,24 +2,35 @@ import re
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 from django.template.loader import get_template
 from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.api.custom_jwt import CustomTokenObtainPairSerializer
-from accounts.api.serializers import UserRegistrationSerializer, PasswordResetSerializer
+from accounts.api.custom_jwt import CustomTokenObtainPairSerializer, CustomJWTAuthentication
+from accounts.api.serializers import UserRegistrationSerializer, PasswordResetSerializer, ListAllUsersSerializer
 from activities.models import AllActivity
+from administrative.api.serializers import AdminDepartmentDetailsSerializer
+from administrative.models import AdminDepartment
+from billing.api.serializers import BillingDetailsSerializer
 from billing.models import Billing
 from clients.models import Client
+from commercial.api.serializers import CommercialDetailsSerializer
 from commercial.models import Commercial
 from communications.models import PrivateChatRoom
+from human_resources.api.serializers import HumanResourceDetailsSerializer
 from human_resources.models import HumanResource
+from operations.api.serializers import OperationsDetailsSerializer
 from operations.models import Operation
+from secretary.api.serializers import SecretaryDetailsSerializer
 from secretary.models import Secretary
+from security_team.api.serializers import SecurityGuardDetailsSerializer
+from security_team.models import SecurityGuard
 from tas_project.utils import generate_email_token, generate_random_otp_code
 
 User = get_user_model()
@@ -124,6 +135,23 @@ def register_user(request):
                 data["room_id"] = hr_profile.room.room_id
                 data["hr_id"] = hr_profile.hr_id
 
+            if department == "ADMIN":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                admin_profile = AdminDepartment.objects.create(
+                    user=user,
+                    room=room
+                )
+                data["room_id"] = admin_profile.room.room_id
+                data["admin_id"] = admin_profile.admin_id
+
             if department == "OPERATIONS":
                 user.department = department
                 user.phone = phone
@@ -177,6 +205,24 @@ def register_user(request):
                 )
                 data["room_id"] = accounts_profile.room.room_id
                 data["billing_id"] = accounts_profile.billing_id
+
+            if department == "GUARD":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                guard_profile = SecurityGuard.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = guard_profile.room.room_id
+                data["guard_id"] = guard_profile.guard_id
 
 
         # Generate token using the custom serializer
@@ -241,132 +287,222 @@ def register_user(request):
 
 
 
-
 @api_view(['POST', ])
 @permission_classes([])
 @authentication_classes([])
-def register_user2222(request):
+def edit_profile(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        email = request.data.get('email', "").lower()
-        full_name = request.data.get('full_name', "")
+
+        user_id = request.data.get('user_id', "")
+        #email = request.data.get('email', "").lower()
+        first_name = request.data.get('first_name', "")
+        last_name = request.data.get('last_name', "")
+        department = request.data.get('department', "")
         phone = request.data.get('phone', "")
         photo = request.FILES.get('photo')
-        # photo = request.data.get('photo', "")
-        country = request.data.get('country', "")
-        password = request.data.get('password', "")
-        password2 = request.data.get('password2', "")
 
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
-        elif check_email_exist(email):
-            errors['email'] = ['Email already exists in our database.']
+        #if not email:
+        #    errors['email'] = ['User Email is required.']
+        #elif not is_valid_email(email):
+        #    errors['email'] = ['Valid email required.']
 
-        if not full_name:
-            errors['full_name'] = ['Full Name is required.']
+        if not first_name:
+            errors['first_name'] = ['First Name is required.']
 
         if not phone:
             errors['phone'] = ['Phone number is required.']
 
-        if not country:
-            errors['country'] = ['Country is required.']
+        if not last_name:
+            errors['last_name'] = ['Last Name is required.']
 
-        if not password:
-            errors['password'] = ['Password is required.']
-
-        if not password2:
-            errors['password2'] = ['Password2 is required.']
-
-        if password != password2:
-            errors['password'] = ['Passwords dont match.']
-
-        if not is_valid_password(password):
-            errors['password'] = [
-                'Password must be at least 8 characters long\n- Must include at least one uppercase letter,\n- One lowercase letter, one digit,\n- And one special character']
+        try:
+            user = User.objects.get(user_id=user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            data["user_id"] = user.user_id
-            data["email"] = user.email
-            data["full_name"] = user.full_name
-
-            user.user_type = "Client"
+        if user:
+            user.first_name = first_name
+            user.last_name = last_name
+            #user.email = email
             user.save()
 
-            user_profile = UserProfile.objects.create(
-                user=user,
-                phone=phone,
-                country=country,
-                photo=photo  # Save the photo as ContentFile
+            if department == "SECRETARY":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
 
-            )
-            user_profile.save()
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
 
-            data['phone'] = user_profile.phone
-            data['country'] = user_profile.country
-            data['photo'] = user_profile.photo.url
+                try:
+                    secretary_profile = Secretary.objects.get(
+                    user=user,)
+                except:
+                    errors['user_id'] = ['Secretary does not exist.']
 
-        token = Token.objects.get(user=user).key
-        data['token'] = token
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        email_token = generate_email_token()
+                data["secretary_id"] = secretary_profile.secretary_id
 
-        user = User.objects.get(email=email)
-        user.email_token = email_token
-        user.save()
+            if department == "HUMAN RESOURCES":
+                user.phone = phone
+                user.photo = photo
+                user.save()
 
-        context = {
-            'email_token': email_token,
-            'email': user.email,
-            'full_name': user.full_name
-        }
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
 
-        txt_ = get_template("registration/emails/verify.html").render(context)
-        html_ = get_template("registration/emails/verify.txt").render(context)
+                try:
+                    hr_profile = HumanResource.objects.get(
+                    user=user
+                )
+                except:
+                    errors['user_id'] = ['Human Resource does not exist.']
 
-        subject = 'EMAIL CONFIRMATION CODE'
-        from_email = settings.DEFAULT_FROM_EMAIL
-        recipient_list = [user.email]
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        # # Use Celery chain to execute tasks in sequence
-        # email_chain = chain(
-        #     send_generic_email.si(subject, txt_, from_email, recipient_list, html_),
-        # )
-        # # Execute the Celery chain asynchronously
-        # email_chain.apply_async()
 
-        send_mail(
-            subject,
-            txt_,
-            from_email,
-            recipient_list,
-            html_message=html_,
-            fail_silently=False,
-        )
+                data["hr_id"] = hr_profile.hr_id
 
-        #
-        new_activity = AllActivity.objects.create(
-            user=user,
-            subject="User Registration",
-            body=user.email + " Just created an account."
-        )
-        new_activity.save()
+            if department == "ADMIN":
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                try:
+                    admin_profile = AdminDepartment.objects.get(
+                    user=user,
+                )
+                except:
+                    errors['user_id'] = ['Admin Department does not exist.']
+
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+                data["admin_id"] = admin_profile.admin_id
+
+            if department == "OPERATIONS":
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+                try:
+                    operations_profile = Operation.objects.get(
+                    user=user,
+                )
+                except:
+                    errors['user_id'] = ['Operations does not exist.']
+
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+                data["operations_id"] = operations_profile.operations_id
+
+            if department == "COMMERCIAL":
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+                try:
+                    commercial_profile = Commercial.objects.get(
+                    user=user,
+                )
+                except:
+                    errors['user_id'] = ['Commercial does not exist.']
+
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+                data["commercial_id"] = commercial_profile.commercial_id
+
+            if department == "BILLING":
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+                try:
+                    accounts_profile = Billing.objects.get(
+                    user=user
+                )
+                except:
+                    errors['user_id'] = ['Billing does not exist.']
+
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+                data["billing_id"] = accounts_profile.billing_id
+
+            if department == "GUARD":
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+                try:
+                    guard_profile = SecurityGuard.objects.get(
+                    user=user
+                )
+                except:
+                    errors['user_id'] = ['Guard does not exist.']
+
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+                data["guard_id"] = guard_profile.guard_id
 
         payload['message'] = "Successful"
         payload['data'] = data
 
     return Response(payload)
+
+
+
 
 
 @api_view(['POST', ])
@@ -554,86 +690,6 @@ def resend_email_verification(request):
     return Response(payload, status=status.HTTP_200_OK)
 
 
-class UserLoginSecretary(APIView):
-    authentication_classes = []
-    permission_classes = []
-
-    def post(self, request):
-        payload = {}
-        data = {}
-        errors = {}
-
-        email = request.data.get('email', '').lower()
-        password = request.data.get('password', '')
-        fcm_token = request.data.get('fcm_token', '')
-
-        if not email:
-            errors['email'] = ['Email is required.']
-
-        if not password:
-            errors['password'] = ['Password is required.']
-
-        if not fcm_token:
-            errors['fcm_token'] = ['FCM device token is required.']
-
-        try:
-            qs = User.objects.filter(email=email)
-        except User.DoesNotExist:
-            errors['email'] = ['User does not exist.']
-
-        if qs.exists():
-            not_active = qs.filter(email_verified=False)
-            if not_active:
-                errors['email'] = ["Please check your email to confirm your account or resend confirmation email."]
-
-        if not check_password(email, password):
-            errors['password'] = ['Invalid Credentials']
-
-        user = authenticate(email=email, password=password)
-
-        if not user:
-            errors['email'] = ['Invalid Credentials']
-
-        if errors:
-            payload['message'] = "Errors"
-            payload['errors'] = errors
-            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            token = Token.objects.get(user=user)
-        except Token.DoesNotExist:
-            token = Token.objects.create(user=user)
-
-        try:
-            secretary_profile = UserProfile.objects.get(user=user)
-        except UserProfile.DoesNotExist:
-            secretary_profile = UserProfile.objects.create(user=user)
-
-        secretary_profile.active = True
-        secretary_profile.save()
-
-        user.fcm_token = fcm_token
-        user.save()
-
-        data["user_id"] = user.user_id
-        data["email"] = user.email
-        data["full_name"] = user.full_name
-        data["photo"] = user_profile.photo.url
-        data["country"] = user_profile.country
-        data["phone"] = user_profile.phone
-        data["token"] = token.key
-
-        payload['message'] = "Successful"
-        payload['data'] = data
-
-        new_activity = AllActivity.objects.create(
-            user=user,
-            subject="User Login",
-            body=user.email + " Just logged in."
-        )
-        new_activity.save()
-
-        return Response(payload, status=status.HTTP_200_OK)
 
 
 class UserLogin(APIView):
@@ -1040,3 +1096,204 @@ def is_valid_password(password):
         return False
 
     return True
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def list_all_users_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    page_number = request.query_params.get('page', 1)
+    filter_department = request.query_params.get('filter_department', "")
+    page_size = 10
+
+    users = User.objects.filter(is_archived=False)
+
+    if search_query:
+        users = users.filter(
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(username__icontains=search_query) |
+            Q(department__icontains=search_query) |
+            Q(gender__icontains=search_query) |
+            Q(dob__icontains=search_query) |
+            Q(marital_status__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(country__icontains=search_query) |
+            Q(language__icontains=search_query) |
+            Q(location_name__icontains=search_query)
+        )
+
+    if filter_department:
+        users = users.filter(
+            Q(department__icontains=filter_department),
+        )
+
+    paginator = Paginator(users, page_size)
+
+    try:
+        paginated_users = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_users = paginator.page(1)
+    except EmptyPage:
+        paginated_users = paginator.page(paginator.num_pages)
+
+    users_serializer = ListAllUsersSerializer(paginated_users, many=True)
+
+    data['users'] = users_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_users.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_users.next_page_number() if paginated_users.has_next() else None,
+        'previous': paginated_users.previous_page_number() if paginated_users.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_user_details_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    user_id = request.query_params.get('user_id', None)
+
+    if not user_id:
+        errors['user_id'] = ["User id required"]
+
+    try:
+        user = User.objects.get(user_id=user_id)
+    except:
+        errors['user_id'] = ['User does not exist.']
+
+    if errors:
+        payload['message'] = "Errors"
+        payload['errors'] = errors
+        return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+    if user.department == "SECRETARY":
+        try:
+            secretary = Secretary.objects.get(user=user)
+        except:
+            errors['secretary_id'] = ['Secretary does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        secretary_serializer = SecretaryDetailsSerializer(secretary, many=False)
+        if secretary_serializer:
+            user = secretary_serializer.data
+
+    elif user.department == "HUMAN RESOURCES":
+        try:
+            hr = HumanResource.objects.get(user=user)
+        except:
+            errors['hr_id'] = ['Human Resource does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        hr_serializer = HumanResourceDetailsSerializer(hr, many=False)
+        if hr_serializer:
+            user = hr_serializer.data
+
+    elif user.department == "ADMIN":
+        try:
+            admin = AdminDepartment.objects.get(user=user)
+        except:
+            errors['admin_id'] = ['Admin does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        admin_serializer = AdminDepartmentDetailsSerializer(admin, many=False)
+        if admin_serializer:
+            user = admin_serializer.data
+
+    elif user.department == "BILLING":
+        try:
+            billing = Billing.objects.get(user=user)
+        except:
+            errors['billing_id'] = ['Billing does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        billing_serializer = BillingDetailsSerializer(billing, many=False)
+        if billing_serializer:
+            user = billing_serializer.data
+
+    elif user.department == "OPERATIONS":
+        try:
+            operations = Operation.objects.get(user=user)
+        except:
+            errors['operation_id'] = ['Operation does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        operations_serializer = OperationsDetailsSerializer(operations, many=False)
+        if operations_serializer:
+            user = operations_serializer.data
+
+    elif user.department == "COMMERCIAL":
+        try:
+            commercial = Commercial.objects.get(user=user)
+        except:
+            errors['commercial_id'] = ['Commercial does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        commercial_serializer = CommercialDetailsSerializer(commercial, many=False)
+        if commercial_serializer:
+            user = commercial_serializer.data
+
+    elif user.department == "GUARD":
+        try:
+            guard = SecurityGuard.objects.get(user=user)
+        except:
+            errors['guard_id'] = ['Guard does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        guard_serializer = SecurityGuardDetailsSerializer(guard, many=False)
+        if guard_serializer:
+            user = guard_serializer.data
+
+    payload['message'] = "Successful"
+    payload['data'] = user
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+

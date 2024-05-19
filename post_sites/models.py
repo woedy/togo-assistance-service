@@ -1,18 +1,66 @@
+import os
+import random
+
 from django.db import models
 
 from clients.models import Client
 from security_team.models import SecurityGuard
 
 
-# Create your models here.
+
+
+class ClientZone(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_zones')
+    zone_name = models.CharField(max_length=5000, blank=True, null=True)
+
+    description = models.TextField(null=True, blank=True)
+
+    is_deleted = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class ClientZoneCoordinate(models.Model):
+    client_zone = models.ForeignKey(ClientZone, on_delete=models.CASCADE, related_name='zone_coordinates')
+
+    lat = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
+    lng = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
+
+    is_deleted = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+GENDER_CHOICES = (
+    ('Male Only', 'Male Only'),
+    ('Female Only', 'Female Only'),
+    ('Both', 'Both'),
+
+)
+
+
+
+SITE_TYPE = (
+    ('Industrial', 'Industrial'),
+    ('Commercial', 'Commercial'),
+    ('Residential', 'Residential'),
+    ('Personal', 'Personal'),
+
+)
+
 class ClientPostSite(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_post_sites')
+    client_zone = models.ForeignKey(ClientZone, on_delete=models.CASCADE, related_name='zone_post_sites')
     site_name = models.CharField(max_length=5000, blank=True, null=True)
 
-    is_client = models.BooleanField(default=False)
 
-    assigned_guards = models.IntegerField(default=0)
+    no_of_guards = models.IntegerField(default=0)
     guards_on_site = models.IntegerField(default=0)
+    guards_gender = models.CharField(max_length=100, choices=GENDER_CHOICES, blank=True, null=True)
+    site_type = models.CharField(max_length=100, choices=SITE_TYPE, blank=True, null=True)
+    description = models.TextField(null=True, blank=True)
+
 
     location_name = models.CharField(max_length=200, null=True, blank=True)
     lat = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
@@ -65,12 +113,23 @@ class PostSiteNote(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+def get_file_ext(filepath):
+    base_name = os.path.basename(filepath)
+    name, ext = os.path.splitext(base_name)
+    return name, ext
 
-
+def upload_post_site_files_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "client_files/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
 
 class PostSiteFile(models.Model):
     post_site = models.ForeignKey(ClientPostSite, on_delete=models.CASCADE, related_name="post_site_file")
-    file = models.FileField(upload_to=upload_guard_files_path, null=True, blank=True)
+    file = models.FileField(upload_to=upload_post_site_files_path, null=True, blank=True)
     file_name = models.CharField(max_length=1000, null=True, blank=True)
     file_ext = models.CharField(max_length=255, null=True, blank=True)
 

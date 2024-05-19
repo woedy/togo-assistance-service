@@ -1,7 +1,11 @@
+import os
+import random
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import pre_save
 
+from bookings.models import Booking
 from communications.models import PrivateChatRoom
 from tas_project.utils import unique_commercial_id_generator
 
@@ -32,8 +36,20 @@ def pre_save_commercial_id_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(pre_save_commercial_id_receiver, sender=Commercial)
 
+def get_file_ext(filepath):
+    base_name = os.path.basename(filepath)
+    name, ext = os.path.splitext(base_name)
+    return name, ext
 
 
+def upload_file_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "contracts/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
 
 STATUS_CHOICE = (
 
@@ -41,7 +57,6 @@ STATUS_CHOICE = (
     ('Pending', 'Pending'),
     ('Operations', 'Operations'),
     ('Contract', 'Contract'),
-
     ('Rescheduled', 'Rescheduled'),
     ('Approved', 'Approved'),
     ('Declined', 'Declined'),
@@ -53,14 +68,18 @@ STATUS_CHOICE = (
 )
 
 
-class Requests(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='requests')
-    request_status = models.CharField(max_length=500, choices=STATUS_CHOICE, blank=True, null=True)
 
-
-    created_at = models.DateTimeField(auto_now_add=True)
 
 class Contract(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='contracts')
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booking_contracts')
 
+    file = models.FileField(upload_to=upload_file_path, null=True, blank=True)
+
+    sent = models.BooleanField(default=False)
+    signed = models.BooleanField(default=False)
+    declined = models.BooleanField(default=False)
+
+    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+

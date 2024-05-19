@@ -23,6 +23,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/accounts/', include('accounts.api.urls', 'accounts_api')),
+    path('api/clients/', include('clients.api.urls', 'clients_api')),
+    path('api/bookings/', include('bookings.api.urls', 'bookings_api')),
+    path('api/secretary/', include('secretary.api.urls', 'secretary_api')),
+    path('api/reports/', include('reports.api.urls', 'reports_api')),
 
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

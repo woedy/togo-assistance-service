@@ -49,28 +49,20 @@ GENDER_CHOICES = (
 
 
 
+PURPOSE_CHOICES = (
+    ('Guard Request', 'Guard Request'),
+    ('Visit', 'Visit'),
+    ('Complain', 'Complain'),
+    ('Payment', 'Payment'),
+)
+
+
+
+
 class Client(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
-    guard_id = models.CharField(max_length=200, null=True, blank=True)
-
-    room = models.ForeignKey(PrivateChatRoom, on_delete=models.SET_NULL, null=True, blank=True, related_name="client_user_room")
-
-    gender = models.CharField(max_length=100, choices=GENDER_CHOICES, blank=True, null=True)
-    photo = models.ImageField(upload_to=upload_image_path, null=True, blank=True, default=get_default_profile_image)
-    dob = models.DateTimeField(null=True, blank=True)
-    marital_status = models.BooleanField(default=False, null=True, blank=True)
-    phone = models.CharField(max_length=255, null=True, blank=True)
-    country = models.CharField(max_length=255, null=True, blank=True)
-    language = models.CharField(default="English", max_length=255, null=True, blank=True)
-    about_me = models.TextField(blank=True, null=True)
-
-
-    profile_complete = models.BooleanField(default=False)
-    verified = models.BooleanField(default=False)
-
-    location_name = models.CharField(max_length=200, null=True, blank=True)
-    lat = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
-    lng = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
+    client_id = models.CharField(max_length=200, null=True, blank=True)
+    purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
 
     is_deleted = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
@@ -80,22 +72,6 @@ class Client(models.Model):
 
     def __str__(self):
         return self.user.email
-
-
-def post_save_client_info(sender, instance, *args, **kwargs):
-    if not instance.photo:
-        instance.photo = get_default_profile_image()
-
-post_save.connect(post_save_client_info, sender=Client)
-
-def post_save_user_room(sender, instance, *args, **kwargs):
-    if not instance.room:
-        instance.room = PrivateChatRoom.objects.create(
-            user=instance.user
-        )
-
-post_save.connect(post_save_user_room, sender=Client)
-
 
 
 
@@ -139,6 +115,18 @@ class ClientGuardFile(models.Model):
 
 class ClientNote(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="client_notes")
+    title = models.CharField(max_length=1000, null=True, blank=True)
+    note = models.TextField(null=True, blank=True)
+
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+class ClientComplaint(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="client_complaints")
     title = models.CharField(max_length=1000, null=True, blank=True)
     note = models.TextField(null=True, blank=True)
 

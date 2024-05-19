@@ -109,6 +109,21 @@ def unique_hr_id_generator(instance):
         return None
     return hr_id
 
+def unique_admin_id_generator(instance):
+    """
+    This is for a admin_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    admin_id = "AD-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(A)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(admin_id=admin_id).exists()
+    if qs_exists:
+        return None
+    return admin_id
+
 
 def unique_operations_id_generator(instance):
     """
@@ -170,6 +185,20 @@ def unique_client_id_generator(instance):
     if qs_exists:
         return None
     return client_id
+def unique_operations_id_generator(instance):
+    """
+    This is for a operations_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    operations_id = "OP-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(C)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(operations_id=operations_id).exists()
+    if qs_exists:
+        return None
+    return operations_id
 
 
 def unique_room_id_generator(instance):
@@ -186,3 +215,20 @@ def unique_room_id_generator(instance):
     if qs_exists:
         return None
     return room_id
+
+
+
+def unique_booking_id_generator(instance):
+    """
+    This is for a booking_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    booking_id = "BUK-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(AP)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(booking_id=booking_id).exists()
+    if qs_exists:
+        return None
+    return booking_id

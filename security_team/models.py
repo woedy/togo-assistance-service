@@ -9,7 +9,7 @@ from django.db.models.signals import post_save, pre_save
 from communications.models import PrivateChatRoom
 from tas_project.utils import unique_guard_id_generator
 
-User = get_user_model
+User = get_user_model()
 
 
 def get_filename_ext(filepath):
@@ -72,15 +72,7 @@ class SecurityGuard(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_guards')
     guard_id = models.CharField(max_length=200, null=True, blank=True)
 
-    gender = models.CharField(max_length=100, choices=GENDER_CHOICES, blank=True, null=True)
-    photo = models.ImageField(upload_to=upload_image_path, null=True, blank=True, default=get_default_profile_image)
-    dob = models.DateTimeField(null=True, blank=True)
-    marital_status = models.BooleanField(default=False, null=True, blank=True)
-    phone = models.CharField(max_length=255, null=True, blank=True)
-    country = models.CharField(max_length=255, null=True, blank=True)
-    language = models.CharField(default="English", max_length=255, null=True, blank=True)
-    about_me = models.TextField(blank=True, null=True)
-
+    room = models.ForeignKey(PrivateChatRoom, on_delete=models.SET_NULL, null=True, blank=True, related_name="guards_user_room")
 
     profile_complete = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)
@@ -100,15 +92,6 @@ class SecurityGuard(models.Model):
 
     def __str__(self):
         return self.user.email
-
-
-
-def post_save_guard_info(sender, instance, *args, **kwargs):
-    if not instance.photo:
-        instance.photo = get_default_profile_image()
-
-post_save.connect(post_save_guard_info, sender=SecurityGuard)
-
 
 
 
@@ -151,6 +134,8 @@ class SecurityGuardIDImage(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
 
 class SecurityGuardContact(models.Model):
     guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE, related_name='guard_contacts')
@@ -199,23 +184,6 @@ class SecurityGuardActivity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
-class SecurityGuardActivity(models.Model):
-    guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE, related_name='guard_activities')
-
-    subject = models.CharField(max_length=500, blank=True, null=True)
-    action = models.TextField(blank=True, null=True)
-
-    task_completed = models.BooleanField(default=False)
-    hours_worked = models.BooleanField(default=False)
-    submitted_reports = models.BooleanField(default=False)
-    no_show = models.BooleanField(default=False)
-    late = models.BooleanField(default=False)
-
-    is_deleted = models.BooleanField(default=False)
-    active = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
 
@@ -302,7 +270,7 @@ class SecurityGuardSettingScheduler(models.Model):
 
 
 class SecurityGuardSettingNotification(models.Model):
-    guard_settings = models.OneToOneField(SecurityGuardSetting, on_delete=models.CASCADE, related_name="guard_schedule_settings")
+    guard_settings = models.OneToOneField(SecurityGuardSetting, on_delete=models.CASCADE, related_name="guard_notification_settings")
 
     auto_schedule = models.BooleanField(default=False)
 
@@ -312,7 +280,7 @@ class SecurityGuardSettingNotification(models.Model):
 
 
 class SecurityGuardTask(models.Model):
-    guard = models.OneToOneField(SecurityGuard, on_delete=models.CASCADE, related_name="tasks")
+    guard = models.OneToOneField(SecurityGuard, on_delete=models.CASCADE, related_name="guard_tasks")
     item = models.CharField(max_length=1000, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 

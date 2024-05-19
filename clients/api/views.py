@@ -1,0 +1,438 @@
+
+from django.contrib.auth import get_user_model
+from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from accounts.api.custom_jwt import CustomJWTAuthentication
+from accounts.api.views import is_valid_email, check_email_exist
+from activities.models import AllActivity
+from clients.api.serializers import AllClientsSerializer, ClientDetailsSerializer
+
+from clients.models import Client, ClientComplaint
+
+User = get_user_model()
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def add_client(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        email = request.data.get('email', "").lower()
+        first_name = request.data.get('first_name', "")
+        last_name = request.data.get('last_name', "")
+        phone = request.data.get('phone', "")
+        purpose = request.data.get('purpose', "")
+        photo = request.data.get('photo', "")
+
+        if not email:
+            errors['email'] = ['User Email is required.']
+        elif not is_valid_email(email):
+            errors['email'] = ['Valid email required.']
+        elif check_email_exist(email):
+            errors['email'] = ['Email already exists in our database.']
+
+        if not first_name:
+            errors['first_name'] = ['First Name is required.']
+
+        if not phone:
+            errors['phone'] = ['Phone number is required.']
+
+        if not last_name:
+            errors['last_name'] = ['Last Name is required.']
+
+        if not purpose:
+            errors['purpose'] = ['Purpose is required.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+        user = User.objects.create(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            department="CLIENT",
+            photo=photo
+        )
+
+        client_profile = Client.objects.create(
+            user=user,
+            purpose=purpose
+
+        )
+
+        data["user_id"] = user.user_id
+        data["client_id"] = client_profile.client_id
+        data["purpose"] = client_profile.purpose
+        data["email"] = user.email
+        data["first_name"] = user.first_name
+        data["last_name"] = user.last_name
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="User Registration",
+            body=user.email + " Just created an account."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_clients_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if errors:
+        payload['message'] = "Errors"
+        payload['errors'] = errors
+        return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+    all_clients = Client.objects.all().filter(user__is_archived=False)
+
+    all_clients_serializer = AllClientsSerializer(all_clients, many=True)
+    if all_clients_serializer:
+        _all_clients = all_clients_serializer.data
+
+    payload['message'] = "Successful"
+    payload['data'] = _all_clients
+
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_client_details_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    client_id = request.query_params.get('client_id', None)
+
+    if not client_id:
+        errors['client_id'] = ["Client id required"]
+
+    try:
+        client = Client.objects.get(client_id=client_id)
+    except Client.DoesNotExist:
+        errors['client_id'] = ['Client does not exist.']
+
+    if errors:
+        payload['message'] = "Errors"
+        payload['errors'] = errors
+        return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+    client_serializer = ClientDetailsSerializer(client, many=False)
+    if client_serializer:
+        client = client_serializer.data
+
+    client_serializer = ClientDetailsSerializer(client, many=False)
+
+    payload['message'] = "Successful"
+    payload['data'] = client
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def edit_client(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        client_id = request.data.get('client_id', "")
+        email = request.data.get('email', "").lower()
+        first_name = request.data.get('first_name', "")
+        last_name = request.data.get('last_name', "")
+        phone = request.data.get('phone', "")
+        gender = request.data.get('gender', "")
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
+        if not email:
+            errors['email'] = ['User Email is required.']
+        elif not is_valid_email(email):
+            errors['email'] = ['Valid email required.']
+
+        if not first_name:
+            errors['first_name'] = ['First Name is required.']
+
+        if not phone:
+            errors['phone'] = ['Phone number is required.']
+
+        if not last_name:
+            errors['last_name'] = ['Last Name is required.']
+
+        try:
+            client_profile = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        client_profile.user.first_name = first_name
+        client_profile.user.last_name = last_name
+        client_profile.user.phone = phone
+        client_profile.user.save()
+
+        client_profile.gender = gender
+        client_profile.save()
+
+        data["user_id"] = client_profile.user.user_id
+        data["email"] = client_profile.user.email
+        data["first_name"] = client_profile.user.first_name
+        data["last_name"] = client_profile.user.last_name
+        data["purpose"] = client_profile.purpose
+        data["gender"] = client_profile.gender
+
+        new_activity = AllActivity.objects.create(
+            user=client_profile.user,
+            subject="Profile Edited",
+            body=client_profile.user.email + " Just edited their account."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+@api_view(['POST', ])
+@permission_classes([])
+@authentication_classes([])
+def archive_client(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        client_id = request.data.get('client_id', "")
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
+        try:
+            client = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
+
+        try:
+            user = User.objects.get(user_id=client.user.user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_archived = True
+        user.save()
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="Account Archived",
+            body=user.email + " account archived."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+@api_view(['POST', ])
+@permission_classes([])
+@authentication_classes([])
+def delete_client(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        client_id = request.data.get('client_id', "")
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
+        try:
+            client = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
+
+        try:
+            user = User.objects.get(user_id=client.user.user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.delete()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+@api_view(['POST', ])
+@permission_classes([])
+@authentication_classes([])
+def unarchive_client(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        client_id = request.data.get('client_id', "")
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
+        try:
+            client = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
+
+        try:
+            user = User.objects.get(user_id=client.user.user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_archived = False
+        user.save()
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="Account UnArchived",
+            body=user.email + " account archived."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_archived_clients_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if errors:
+        payload['message'] = "Errors"
+        payload['errors'] = errors
+        return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+    all_clients = Client.objects.all().filter(user__is_archived=True)
+
+    all_clients_serializer = AllClientsSerializer(all_clients, many=True)
+    if all_clients_serializer:
+        _all_clients = all_clients_serializer.data
+
+    payload['message'] = "Successful"
+    payload['data'] = _all_clients
+
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def add_client_complaint(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        client_id = request.data.get('client_id', "")
+        title = request.data.get('title', "")
+        note = request.data.get('note', "")
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
+        if not title:
+            errors['title'] = ['Title is required.']
+
+        if not note:
+            errors['note'] = ['Note is required.']
+
+
+        try:
+            client = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        new_complaint = ClientComplaint.objects.create(
+            client=client,
+            title=title,
+            note=note,
+
+        )
+
+        data["complaint_id"] = new_complaint.id
+
+        new_activity = AllActivity.objects.create(
+            user=client.user,
+            subject="New Client Complaint",
+            body=client.user.email + " Added a new complaint."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)

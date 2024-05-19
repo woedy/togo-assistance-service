@@ -93,6 +93,8 @@ DEPARTMENT = (
 ('BILLING', 'BILLING'),
 ('OPERATIONS', 'OPERATIONS'),
 ('COMMERCIAL', 'COMMERCIAL'),
+('CLIENT', 'CLIENT'),
+('GUARD', 'GUARD'),
 
 )
 
@@ -139,12 +141,10 @@ class User(AbstractBaseUser):
     currently_checked_in = models.BooleanField(default=False)
     last_worked = models.DateTimeField(blank=True, null=True)
 
-    is_deleted = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
 
 
     is_active = models.BooleanField(default=True)
-    archived = models.BooleanField(default=True)
-
     staff = models.BooleanField(default=False)
     admin = models.BooleanField(default=False)
 
