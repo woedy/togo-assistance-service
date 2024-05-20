@@ -3,7 +3,7 @@ from django.db.models.signals import pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_booking_id_generator
+from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator
 
 STATUS_CHOICE = (
 
@@ -70,6 +70,7 @@ class Booking(models.Model):
     booking_declined_at = models.DateTimeField(null=True, blank=True)
     booking_cancelled_at = models.DateTimeField(null=True, blank=True)
 
+    is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -124,15 +125,25 @@ class Estimate(models.Model):
     quantity = models.IntegerField(default=0, null=True, blank=True)
     tax = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
 
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="client_estimates")
-
     status = models.CharField(max_length=255, default="Pending", null=True, blank=True, choices=EST_STATUS_CHOICE)
     amount = models.CharField(max_length=200,  null=True, blank=True)
     expires_on = models.DateTimeField(null=True, blank=True)
 
+    #estimator = models.ForeignKey(Commercial, on_delete=models.SET_NULL, related_name="estimate_commercial")
+
+    is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_estimate_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.estimate_id:
+        instance.estimate_id = unique_estimate_id_generator(instance)
+
+pre_save.connect(pre_save_estimate_id_receiver, sender=Estimate)
+
+
 
 
 class Service(models.Model):

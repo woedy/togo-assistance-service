@@ -2,7 +2,8 @@ from django.urls import path
 
 from accounts.api.views import register_user, verify_user_email, resend_email_verification, UserLogin, \
     PasswordResetView, confirm_otp_password_view, resend_password_otp, new_password_reset_view, remove_user_view, \
-    edit_profile, list_all_users_view, get_user_details_view
+    edit_profile, list_all_users_view, get_user_details_view, archive_user_view, unarchive_user_view, \
+    list_all_archived_users_view, delete_user_view
 
 app_name = 'accounts'
 
@@ -26,6 +27,10 @@ urlpatterns = [
 
 
     path('get-all-users/', list_all_users_view, name="list_all_users_view"),
+    path('get-all-archived-users/', list_all_archived_users_view, name="list_all_archived_users_view"),
     path('get-user-details/', get_user_details_view, name="get_user_details_view"),
+    path('archive-user/', archive_user_view, name="archive_user_view"),
+    path('unarchive-user/', unarchive_user_view, name="unarchive_user_view"),
+    path('delete-user/', delete_user_view, name="delete_user_view"),
 
 ]

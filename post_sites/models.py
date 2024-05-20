@@ -2,14 +2,16 @@ import os
 import random
 
 from django.db import models
+from django.db.models.signals import pre_save
 
 from clients.models import Client
 from security_team.models import SecurityGuard
-
-
+from tas_project.utils import unique_site_id_generator, unique_zone_id_generator
 
 
 class ClientZone(models.Model):
+    zone_id = models.CharField(max_length=200, null=True, blank=True)
+
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_zones')
     zone_name = models.CharField(max_length=5000, blank=True, null=True)
 
@@ -19,6 +21,15 @@ class ClientZone(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_zone_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.zone_id:
+        instance.zone_id = unique_zone_id_generator(instance)
+
+pre_save.connect(pre_save_zone_id_receiver, sender=ClientZone)
+
+
 
 
 class ClientZoneCoordinate(models.Model):
@@ -51,6 +62,8 @@ SITE_TYPE = (
 )
 
 class ClientPostSite(models.Model):
+    site_id = models.CharField(max_length=200, null=True, blank=True)
+
     client_zone = models.ForeignKey(ClientZone, on_delete=models.CASCADE, related_name='zone_post_sites')
     site_name = models.CharField(max_length=5000, blank=True, null=True)
 
@@ -70,6 +83,15 @@ class ClientPostSite(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_site_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.site_id:
+        instance.site_id = unique_site_id_generator(instance)
+
+pre_save.connect(pre_save_site_id_receiver, sender=ClientPostSite)
+
+
 
 
 class PostSiteActivity(models.Model):

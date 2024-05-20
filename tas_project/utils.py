@@ -185,6 +185,70 @@ def unique_client_id_generator(instance):
     if qs_exists:
         return None
     return client_id
+
+
+def unique_site_id_generator(instance):
+    """
+    This is for a site_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    site_id = "SYT-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(E)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(site_id=site_id).exists()
+    if qs_exists:
+        return None
+    return site_id
+
+def unique_zone_id_generator(instance):
+    """
+    This is for a zone_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    zone_id = "ZN-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(Z)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(zone_id=zone_id).exists()
+    if qs_exists:
+        return None
+    return zone_id
+
+def unique_estimate_id_generator(instance):
+    """
+    This is for a estimate_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    estimate_id = "EST-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(P)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(estimate_id=estimate_id).exists()
+    if qs_exists:
+        return None
+    return estimate_id
+
+def unique_contract_id_generator(instance):
+    """
+    This is for a contract_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    contract_id = "CON-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(T)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(contract_id=contract_id).exists()
+    if qs_exists:
+        return None
+    return contract_id
+
+
+
 def unique_operations_id_generator(instance):
     """
     This is for a operations_id field

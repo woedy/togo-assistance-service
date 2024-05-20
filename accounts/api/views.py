@@ -822,8 +822,8 @@ class PasswordResetView(generics.GenericAPIView):
             'last_name': user.last_name
         }
 
-        txt_ = get_template("registration/emails/send_otp.txt").render(context)
-        html_ = get_template("registration/emails/send_otp.html").render(context)
+        txt_ = get_template("registration/emails/send_estimate.txt").render(context)
+        html_ = get_template("registration/emails/send_estimate.html").render(context)
 
         subject = 'OTP CODE'
         from_email = settings.DEFAULT_FROM_EMAIL
@@ -947,8 +947,8 @@ def resend_password_otp(request):
         'last_name': user.last_name
     }
 
-    txt_ = get_template("registration/emails/send_otp.txt").render(context)
-    html_ = get_template("registration/emails/send_otp.html").render(context)
+    txt_ = get_template("registration/emails/send_estimate.txt").render(context)
+    html_ = get_template("registration/emails/send_estimate.html").render(context)
 
     subject = 'OTP CODE'
     from_email = settings.DEFAULT_FROM_EMAIL
@@ -1163,6 +1163,67 @@ def list_all_users_view(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
+def list_all_archived_users_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    page_number = request.query_params.get('page', 1)
+    filter_department = request.query_params.get('filter_department', "")
+    page_size = 10
+
+    users = User.objects.filter(is_archived=True)
+
+    if search_query:
+        users = users.filter(
+            Q(email__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(username__icontains=search_query) |
+            Q(department__icontains=search_query) |
+            Q(gender__icontains=search_query) |
+            Q(dob__icontains=search_query) |
+            Q(marital_status__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(country__icontains=search_query) |
+            Q(language__icontains=search_query) |
+            Q(location_name__icontains=search_query)
+        )
+
+    if filter_department:
+        users = users.filter(
+            Q(department__icontains=filter_department),
+        )
+
+    paginator = Paginator(users, page_size)
+
+    try:
+        paginated_users = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_users = paginator.page(1)
+    except EmptyPage:
+        paginated_users = paginator.page(paginator.num_pages)
+
+    users_serializer = ListAllUsersSerializer(paginated_users, many=True)
+
+    data['users'] = users_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_users.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_users.next_page_number() if paginated_users.has_next() else None,
+        'previous': paginated_users.previous_page_number() if paginated_users.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
 def get_user_details_view(request):
     payload = {}
     data = {}
@@ -1296,4 +1357,164 @@ def get_user_details_view(request):
 
     return Response(payload, status=status.HTTP_200_OK)
 
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def archive_user_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        user_id = request.data.get('user_id', "")
+
+        if not user_id:
+            errors['user_id'] = ['User ID is required.']
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_archived = True
+        user.save()
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="Account Archived",
+            body=user.email + " account archived."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def archive_user_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        user_id = request.data.get('user_id', "")
+
+        if not user_id:
+            errors['user_id'] = ['User ID is required.']
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_archived = True
+        user.save()
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="Account Archived",
+            body=user.email + " account archived."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def unarchive_user_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        user_id = request.data.get('user_id', "")
+
+        if not user_id:
+            errors['user_id'] = ['User ID is required.']
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_archived = False
+        user.save()
+
+        new_activity = AllActivity.objects.create(
+            user=user,
+            subject="Account unarchived",
+            body=user.email + " account unarchived."
+        )
+        new_activity.save()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def delete_user_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        user_id = request.data.get('user_id', "")
+
+        if not user_id:
+            errors['user_id'] = ['User ID is required.']
+
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.delete()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
 

@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from commercial.models import Commercial
+from bookings.models import Estimate
+from commercial.models import Commercial, Contract
 from operations.models import Operation
 
 User = get_user_model()
@@ -20,6 +21,19 @@ class CommercialDetailsSerializer(serializers.ModelSerializer):
         model = Commercial
         fields = "__all__"
 
+
+
+class AllEstimatesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Estimate
+        fields = "__all__"
+
+
+
+class AllContractsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contract
+        fields = "__all__"
 
 
 

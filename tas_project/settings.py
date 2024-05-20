@@ -71,7 +71,8 @@ INSTALLED_APPS = [
     'secretary',
     'bookings',
     "reports",
-    "security_team"
+    "security_team",
+    "post_sites"
 ]
 
 AUTH_USER_MODEL = 'accounts.User'

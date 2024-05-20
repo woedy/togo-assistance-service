@@ -7,7 +7,7 @@ from django.db.models.signals import pre_save
 
 from bookings.models import Booking
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_commercial_id_generator
+from tas_project.utils import unique_commercial_id_generator, unique_contract_id_generator
 
 User = get_user_model()
 
@@ -72,6 +72,7 @@ STATUS_CHOICE = (
 
 class Contract(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booking_contracts')
+    contract_id = models.CharField(max_length=200, null=True, blank=True)
 
     file = models.FileField(upload_to=upload_file_path, null=True, blank=True)
 
@@ -79,7 +80,15 @@ class Contract(models.Model):
     signed = models.BooleanField(default=False)
     declined = models.BooleanField(default=False)
 
+    is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+
+def pre_save_contract_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.contract_id:
+        instance.contract_id = unique_contract_id_generator(instance)
+
+pre_save.connect(pre_save_contract_id_receiver, sender=Contract)

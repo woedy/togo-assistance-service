@@ -28,6 +28,8 @@ urlpatterns = [
     path('api/secretary/', include('secretary.api.urls', 'secretary_api')),
     path('api/reports/', include('reports.api.urls', 'reports_api')),
 
+    path('api/commercial/', include('commercial.api.urls', 'commercial_api')),
+
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
