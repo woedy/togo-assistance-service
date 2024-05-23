@@ -25,6 +25,7 @@ from commercial.models import Commercial
 from communications.models import PrivateChatRoom
 from human_resources.api.serializers import HumanResourceDetailsSerializer
 from human_resources.models import HumanResource
+from legal.models import Legal
 from operations.api.serializers import OperationsDetailsSerializer
 from operations.models import Operation
 from secretary.api.serializers import SecretaryDetailsSerializer
@@ -50,7 +51,8 @@ def register_user(request):
         last_name = request.data.get('last_name', "")
         department = request.data.get('department', "")
         phone = request.data.get('phone', "")
-        photo = request.FILES.get('photo')
+        photo = request.data.get('photo', "")
+        #photo = request.FILES.get('photo')
         password = request.data.get('password', "Tas@123!_")
         password2 = request.data.get('password2', "Tas@123!_")
 
@@ -96,7 +98,7 @@ def register_user(request):
             data["first_name"] = user.first_name
             data["last_name"] = user.last_name
 
-            room =  PrivateChatRoom.objects.create(
+            room = PrivateChatRoom.objects.create(
                 user=user
             )
 
@@ -223,6 +225,24 @@ def register_user(request):
                 )
                 data["room_id"] = guard_profile.room.room_id
                 data["guard_id"] = guard_profile.guard_id
+
+            if department == "LEGAL":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                legal_profile = Legal.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = legal_profile.room.room_id
+                data["legal_id"] = legal_profile.legal_id
 
 
         # Generate token using the custom serializer
@@ -495,6 +515,28 @@ def edit_profile(request):
                     return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
                 data["guard_id"] = guard_profile.guard_id
+
+            if department == "LEGAL":
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+                try:
+                    legal_profile = Legal.objects.get(
+                    user=user
+                )
+                except:
+                    errors['user_id'] = ['Legal does not exist.']
+
+                if errors:
+                    payload['message'] = "Errors"
+                    payload['errors'] = errors
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+                data["legal_id"] = legal_profile.legal_id
 
         payload['message'] = "Successful"
         payload['data'] = data

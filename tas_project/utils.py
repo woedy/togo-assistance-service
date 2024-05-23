@@ -248,6 +248,22 @@ def unique_contract_id_generator(instance):
     return contract_id
 
 
+def unique_legal_id_generator(instance):
+    """
+    This is for a legal_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    legal_id = "LG-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(J)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(legal_id=legal_id).exists()
+    if qs_exists:
+        return None
+    return legal_id
+
+
 
 def unique_operations_id_generator(instance):
     """
@@ -296,3 +312,18 @@ def unique_booking_id_generator(instance):
     if qs_exists:
         return None
     return booking_id
+
+def unique_walk_in_id_generator(instance):
+    """
+    This is for a walk_in_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    walk_in_id = "WLK-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(W)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(walk_in_id=walk_in_id).exists()
+    if qs_exists:
+        return None
+    return walk_in_id

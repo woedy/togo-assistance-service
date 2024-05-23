@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-from commercial.models import Commercial, Contract
+from commercial.models import Commercial
 
 admin.site.register(Commercial)
-admin.site.register(Contract)

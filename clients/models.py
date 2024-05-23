@@ -62,9 +62,10 @@ PURPOSE_CHOICES = (
 class Client(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
     client_id = models.CharField(max_length=200, null=True, blank=True)
+    company_name = models.CharField(max_length=500, null=True, blank=True)
     purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
 
-    is_deleted = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

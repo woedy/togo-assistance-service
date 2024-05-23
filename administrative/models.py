@@ -57,13 +57,6 @@ class AdminDepartment(models.Model):
     def __str__(self):
         return self.user.email
 
-def post_save_user_room(sender, instance, *args, **kwargs):
-    if not instance.room:
-        instance.room = PrivateChatRoom.objects.create(
-            user=instance.user
-        )
-
-post_save.connect(post_save_user_room, sender=AdminDepartment)
 
 def pre_save_admin_id_receiver(sender, instance, *args, **kwargs):
     if not instance.admin_id:

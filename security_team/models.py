@@ -94,16 +94,6 @@ class SecurityGuard(models.Model):
         return self.user.email
 
 
-
-
-def post_save_user_room(sender, instance, *args, **kwargs):
-    if not instance.room:
-        instance.room = PrivateChatRoom.objects.create(
-            user=instance.user
-        )
-
-post_save.connect(post_save_user_room, sender=SecurityGuard)
-
 def pre_save_guard_id_receiver(sender, instance, *args, **kwargs):
     if not instance.guard_id:
         instance.guard_id = unique_guard_id_generator(instance)

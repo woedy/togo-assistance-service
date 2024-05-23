@@ -28,6 +28,7 @@ def add_client(request):
 
     if request.method == 'POST':
         email = request.data.get('email', "").lower()
+        company_name = request.data.get('company_name', "")
         first_name = request.data.get('first_name', "")
         last_name = request.data.get('last_name', "")
         phone = request.data.get('phone', "")
@@ -40,6 +41,9 @@ def add_client(request):
             errors['email'] = ['Valid email required.']
         elif check_email_exist(email):
             errors['email'] = ['Email already exists in our database.']
+
+        if not company_name:
+            errors['company_name'] = ['Company Name is required.']
 
         if not first_name:
             errors['first_name'] = ['First Name is required.']
@@ -71,23 +75,19 @@ def add_client(request):
 
         client_profile = Client.objects.create(
             user=user,
-            purpose=purpose
+            purpose=purpose,
+            company_name=company_name
 
         )
 
         data["user_id"] = user.user_id
         data["client_id"] = client_profile.client_id
+        data["company_name"] = client_profile.company_name
         data["purpose"] = client_profile.purpose
         data["email"] = user.email
         data["first_name"] = user.first_name
         data["last_name"] = user.last_name
 
-        new_activity = AllActivity.objects.create(
-            user=user,
-            subject="User Registration",
-            body=user.email + " Just created an account."
-        )
-        new_activity.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -224,6 +224,7 @@ def edit_client(request):
     if request.method == 'POST':
         client_id = request.data.get('client_id', "")
         email = request.data.get('email', "").lower()
+        company_name = request.data.get('company_name', "")
         first_name = request.data.get('first_name', "")
         last_name = request.data.get('last_name', "")
         phone = request.data.get('phone', "")
@@ -236,6 +237,9 @@ def edit_client(request):
             errors['email'] = ['User Email is required.']
         elif not is_valid_email(email):
             errors['email'] = ['Valid email required.']
+
+        if not company_name:
+            errors['company_name'] = ['Company Name is required.']
 
         if not first_name:
             errors['first_name'] = ['First Name is required.']
@@ -257,6 +261,7 @@ def edit_client(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
         client_profile.user.first_name = first_name
+        client_profile.company_name = company_name
         client_profile.user.last_name = last_name
         client_profile.user.phone = phone
         client_profile.user.save()
@@ -266,6 +271,7 @@ def edit_client(request):
 
         data["user_id"] = client_profile.user.user_id
         data["email"] = client_profile.user.email
+        data["company_name"] = client_profile.company_name
         data["first_name"] = client_profile.user.first_name
         data["last_name"] = client_profile.user.last_name
         data["purpose"] = client_profile.purpose

@@ -95,6 +95,7 @@ DEPARTMENT = (
 ('COMMERCIAL', 'COMMERCIAL'),
 ('CLIENT', 'CLIENT'),
 ('GUARD', 'GUARD'),
+('LEGAL', 'LEGAL'),
 
 )
 

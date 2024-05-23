@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, pre_save
 
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_secretary_id_generator
+from tas_project.utils import unique_secretary_id_generator, unique_walk_in_id_generator
 
 User = get_user_model()
 
@@ -56,18 +56,54 @@ class Secretary(models.Model):
         return self.user.email
 
 
-def post_save_user_room(sender, instance, *args, **kwargs):
-    if not instance.room:
-        instance.room = PrivateChatRoom.objects.create(
-            user=instance.user
-        )
-
-post_save.connect(post_save_user_room, sender=Secretary)
-
 def pre_save_secretary_id_receiver(sender, instance, *args, **kwargs):
     if not instance.secretary_id:
         instance.secretary_id = unique_secretary_id_generator(instance)
 
 pre_save.connect(pre_save_secretary_id_receiver, sender=Secretary)
 
+
+
+
+PURPOSE_CHOICES = (
+    ('Guard Request', 'Guard Request'),
+    ('Visit', 'Visit'),
+    ('Complain', 'Complain'),
+    ('Payment', 'Payment'),
+)
+
+STATUS_CHOICES = (
+    ('Company', 'Company'),
+    ('Individual', 'Individual')
+)
+
+
+class WalkInLog(models.Model):
+    walk_in_id = models.CharField(max_length=200, null=True, blank=True)
+
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+
+
+
+    purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
+
+    status = models.CharField(choices=STATUS_CHOICES, null=True, blank=True, max_length=200)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return self.user.email
+
+
+def pre_save_walk_in_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.walk_in_id:
+        instance.walk_in_id = unique_walk_in_id_generator(instance)
+
+pre_save.connect(pre_save_walk_in_id_receiver, sender=WalkInLog)
 

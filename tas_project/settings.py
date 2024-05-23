@@ -72,7 +72,8 @@ INSTALLED_APPS = [
     'bookings',
     "reports",
     "security_team",
-    "post_sites"
+    "post_sites",
+    "legal"
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
