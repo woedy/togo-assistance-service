@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from clients.models import Client
-from secretary.models import Secretary, WalkInLog
+from secretary.models import Secretary, LogBook
 
 User = get_user_model()
 
@@ -23,9 +23,9 @@ class SecretaryDetailsSerializer(serializers.ModelSerializer):
 
 
 
-class AllWalkinLogsSerializer(serializers.ModelSerializer):
+class AllLogBookSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WalkInLog
+        model = LogBook
         fields = "__all__"
 
 

@@ -124,12 +124,30 @@ class ClientNote(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+DEPARTMENT = (
+    ('SECRETARY', 'SECRETARY'),
+    ('HUMAN RESOURCES', 'HUMAN RESOURCES'),
+    ('ADMIN', 'ADMIN'),
+('LOGISTICS', 'LOGISTICS'),
+('BILLING', 'BILLING'),
+('OPERATIONS', 'OPERATIONS'),
+('COMMERCIAL', 'COMMERCIAL'),
+('CLIENT', 'CLIENT'),
+('GUARD', 'GUARD'),
+('LEGAL', 'LEGAL'),
+
+)
+
 
 
 class ClientComplaint(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="client_complaints")
+    representative = models.CharField(max_length=1000, null=True, blank=True)
+
     title = models.CharField(max_length=1000, null=True, blank=True)
-    note = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    forward_to = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
 
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

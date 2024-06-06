@@ -313,17 +313,17 @@ def unique_booking_id_generator(instance):
         return None
     return booking_id
 
-def unique_walk_in_id_generator(instance):
+def uniqu_log_id_generator(instance):
     """
-    This is for a walk_in_id field
+    This is for a log_id field
     :param instance:
     :return:
     """
     size = random.randint(5, 7)
-    walk_in_id = "WLK-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(W)"
+    log_id = "LOG-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(C)"
 
     Klass = instance.__class__
-    qs_exists = Klass.objects.filter(walk_in_id=walk_in_id).exists()
+    qs_exists = Klass.objects.filter(log_id=log_id).exists()
     if qs_exists:
         return None
-    return walk_in_id
+    return log_id

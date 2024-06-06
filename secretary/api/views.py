@@ -13,8 +13,8 @@ from clients.api.serializers import ClientDetailsSerializer, ClientComplaintSeri
 from clients.models import Client, ClientComplaint
 from reports.api.serializers import ReportSerializer
 from reports.models import Report
-from secretary.api.serializers import AllWalkinLogsSerializer
-from secretary.models import Secretary, WalkInLog
+from secretary.api.serializers import AllLogBookSerializer
+from secretary.models import Secretary, LogBook
 
 User = get_user_model()
 
@@ -119,7 +119,7 @@ def add_walkin_log_view(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
 
-        new_walkin = WalkInLog.objects.create(
+        new = LogBook.objects.create(
             first_name=first_name,
             last_name=last_name,
             phone=phone,
@@ -148,33 +148,33 @@ def get_all_walkins_view(request):
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
-    all_walkins = WalkInLog.objects.all().filter(is_archived=False)
+    all_logs = LogBook.objects.all().filter(is_archived=False)
 
 
     if search_query:
-        all_walkins = all_walkins.filter(
-            Q(walk_in_id__icontains=search_query)
+        all_logs = all_logs.filter(
+            Q(log_id__icontains=search_query)
         )
 
 
-    paginator = Paginator(all_walkins, page_size)
+    paginator = Paginator(all_logs, page_size)
 
     try:
-        paginated_walkins = paginator.page(page_number)
+        paginated_logs = paginator.page(page_number)
     except PageNotAnInteger:
-        paginated_walkins = paginator.page(1)
+        paginated_logs = paginator.page(1)
     except EmptyPage:
-        paginated_walkins = paginator.page(paginator.num_pages)
+        paginated_logs = paginator.page(paginator.num_pages)
 
-    all_walkin_log_serializer = AllWalkinLogsSerializer(paginated_walkins, many=True)
+    all_log_serializer = AllLogBookSerializer(paginated_logs, many=True)
 
 
-    data['walkin_logs'] = all_walkin_log_serializer.data
+    data['logs'] = all_log_serializer.data
     data['pagination'] = {
-        'page_number': paginated_walkins.number,
+        'page_number': paginated_logs.number,
         'total_pages': paginator.num_pages,
-        'next': paginated_walkins.next_page_number() if paginated_walkins.has_next() else None,
-        'previous': paginated_walkins.previous_page_number() if paginated_walkins.has_previous() else None,
+        'next': paginated_logs.next_page_number() if paginated_logs.has_next() else None,
+        'previous': paginated_logs.previous_page_number() if paginated_logs.has_previous() else None,
     }
 
     payload['message'] = "Successful"
@@ -189,29 +189,29 @@ def get_all_walkins_view(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def archive_walkin(request):
+def archive_log(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        walk_in_id = request.data.get('walk_in_id', "")
+        log_id = request.data.get('log_id', "")
 
-        if not walk_in_id:
-            errors['walk_in_id'] = ['Walkin ID is required.']
+        if not log_id:
+            errors['log_id'] = ['Log ID is required.']
 
         try:
-            walkin = WalkInLog.objects.get(walk_in_id=walk_in_id)
+            log = LogBook.objects.get(log_id=log_id)
         except:
-            errors['walk_in_id'] = ['Walkin does not exist.']
+            errors['log_id'] = ['Log does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        walkin.is_archived = True
-        walkin.save()
+        log.is_archived = True
+        log.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -222,29 +222,29 @@ def archive_walkin(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def unarchive_walkin(request):
+def unarchive_log(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        walk_in_id = request.data.get('walk_in_id', "")
+        log_id = request.data.get('log_id', "")
 
-        if not walk_in_id:
-            errors['walk_in_id'] = ['Walkin ID is required.']
+        if not log_id:
+            errors['log_id'] = ['Log ID is required.']
 
         try:
-            walkin = WalkInLog.objects.get(walk_in_id=walk_in_id)
+            log = LogBook.objects.get(log_id=log_id)
         except:
-            errors['walkin_log_id'] = ['Walkin log does not exist.']
+            errors['log'] = ['log does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        walkin.is_archived = False
-        walkin.save()
+        log.is_archived = False
+        log.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -255,28 +255,28 @@ def unarchive_walkin(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def delete_walkin(request):
+def delete_log(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        walk_in_id = request.data.get('walk_in_id', "")
+        log_id = request.data.get('log_id', "")
 
-        if not walk_in_id:
-            errors['walk_in_id'] = ['Walkin ID is required.']
+        if not log_id:
+            errors['log_id'] = ['Log ID is required.']
 
         try:
-            walkin = WalkInLog.objects.get(walk_in_id=walk_in_id)
+            log = LogBook.objects.get(log_id=log_id)
         except:
-            errors['walk_in_id'] = ['Walkin does not exist.']
+            errors['log_id'] = ['Log does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        walkin.delete()
+        log.delete()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -291,7 +291,7 @@ def delete_walkin(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_archived_walkin_log_view(request):
+def get_all_archived_log_view(request):
     payload = {}
     data = {}
     errors = {}
@@ -300,33 +300,33 @@ def get_all_archived_walkin_log_view(request):
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
-    all_walkins = WalkInLog.objects.all().filter(is_archived=True)
+    all_logs = LogBook.objects.all().filter(is_archived=True)
 
 
     if search_query:
-        all_walkins = all_walkins.filter(
-            Q(walk_in_id__icontains=search_query)
+        all_logs = all_logs.filter(
+            Q(log_id__icontains=search_query)
         )
 
 
-    paginator = Paginator(all_walkins, page_size)
+    paginator = Paginator(all_logs, page_size)
 
     try:
-        paginated_walkins = paginator.page(page_number)
+        paginated_logs = paginator.page(page_number)
     except PageNotAnInteger:
-        paginated_walkins = paginator.page(1)
+        paginated_logs = paginator.page(1)
     except EmptyPage:
-        paginated_walkins = paginator.page(paginator.num_pages)
+        paginated_logs = paginator.page(paginator.num_pages)
 
-    all_walkin_log_serializer = AllWalkinLogsSerializer(paginated_walkins, many=True)
+    all_log_serializer = AllLogBookSerializer(paginated_logs, many=True)
 
 
-    data['walkin_logs'] = all_walkin_log_serializer.data
+    data['logs'] = all_log_serializer.data
     data['pagination'] = {
-        'page_number': paginated_walkins.number,
+        'page_number': paginated_logs.number,
         'total_pages': paginator.num_pages,
-        'next': paginated_walkins.next_page_number() if paginated_walkins.has_next() else None,
-        'previous': paginated_walkins.previous_page_number() if paginated_walkins.has_previous() else None,
+        'next': paginated_logs.next_page_number() if paginated_logs.has_next() else None,
+        'previous': paginated_logs.previous_page_number() if paginated_logs.has_previous() else None,
     }
 
     payload['message'] = "Successful"

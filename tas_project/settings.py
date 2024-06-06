@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'activities',
     'administrative',
     'human_resources',
-    'logistics',
     'billing',
     'operations',
     'commercial',
@@ -73,7 +72,8 @@ INSTALLED_APPS = [
     "reports",
     "security_team",
     "post_sites",
-    "legal"
+    "legal",
+    "logistics"
 ]
 
 AUTH_USER_MODEL = 'accounts.User'

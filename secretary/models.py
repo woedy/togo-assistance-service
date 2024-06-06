@@ -5,8 +5,9 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, pre_save
 
+from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_secretary_id_generator, unique_walk_in_id_generator
+from tas_project.utils import unique_secretary_id_generator, uniqu_log_id_generator
 
 User = get_user_model()
 
@@ -77,17 +78,24 @@ STATUS_CHOICES = (
     ('Individual', 'Individual')
 )
 
+CONTACT_TYPE_CHOICES = (
+    ('Visit', 'Visit'),
+    ('Call', 'Call')
+)
 
-class WalkInLog(models.Model):
-    walk_in_id = models.CharField(max_length=200, null=True, blank=True)
+
+class LogBook(models.Model):
+    log_id = models.CharField(max_length=200, null=True, blank=True)
 
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_logs')
 
 
 
     purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
+    contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES, null=True, blank=True, max_length=200)
 
     status = models.CharField(choices=STATUS_CHOICES, null=True, blank=True, max_length=200)
 
@@ -101,9 +109,9 @@ class WalkInLog(models.Model):
         return self.user.email
 
 
-def pre_save_walk_in_id_receiver(sender, instance, *args, **kwargs):
-    if not instance.walk_in_id:
-        instance.walk_in_id = unique_walk_in_id_generator(instance)
+def pre_save_log_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.log_id:
+        instance.log_id = uniqu_log_id_generator(instance)
 
-pre_save.connect(pre_save_walk_in_id_receiver, sender=WalkInLog)
+pre_save.connect(pre_save_log_id_receiver, sender=LogBook)
 
