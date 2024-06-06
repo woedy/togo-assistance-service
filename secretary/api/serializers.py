@@ -21,9 +21,19 @@ class SecretaryDetailsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ClientSerializer(serializers.ModelSerializer):
+    user = SecretaryUserDetailSerializer(many=False)
+
+    class Meta:
+        model = Client
+        fields = "__all__"
+
+
 
 
 class AllLogBookSerializer(serializers.ModelSerializer):
+    client = ClientSerializer(many=False)
+
     class Meta:
         model = LogBook
         fields = "__all__"

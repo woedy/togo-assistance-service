@@ -85,7 +85,7 @@ def get_secretary_dashboard(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def add_walkin_log_view(request):
+def add_log_view(request):
     payload = {}
     data = {}
     errors = {}
@@ -96,6 +96,8 @@ def add_walkin_log_view(request):
         phone = request.data.get('phone', "")
         purpose = request.data.get('purpose', "")
         _status = request.data.get('status', "")
+        client_id = request.data.get('client_id', "")
+        contact_type = request.data.get('contact_type', "")
 
         if not first_name:
             errors['first_name'] = ['First Name is required.']
@@ -109,8 +111,20 @@ def add_walkin_log_view(request):
         if not _status:
             errors['status'] = ['Status is required.']
 
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
         if not purpose:
             errors['purpose'] = ['Purpose is required.']
+
+        if not contact_type:
+            errors['contact_type'] = ['Contact Type is required.']
+
+
+        try:
+            client = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
 
 
         if errors:
@@ -124,7 +138,9 @@ def add_walkin_log_view(request):
             last_name=last_name,
             phone=phone,
             purpose=purpose,
-            status=_status
+            status=_status,
+            client=client,
+            contact_type=contact_type
         )
 
         payload['message'] = "Successful"
@@ -139,7 +155,7 @@ def add_walkin_log_view(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_walkins_view(request):
+def get_all_logs_view(request):
     payload = {}
     data = {}
     errors = {}

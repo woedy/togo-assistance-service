@@ -7,7 +7,7 @@ from django.db.models.signals import post_save, pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_secretary_id_generator, uniqu_log_id_generator
+from tas_project.utils import unique_secretary_id_generator, unique_log_id_generator
 
 User = get_user_model()
 
@@ -92,8 +92,6 @@ class LogBook(models.Model):
     phone = models.CharField(max_length=255, null=True, blank=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_logs')
 
-
-
     purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES, null=True, blank=True, max_length=200)
 
@@ -111,7 +109,7 @@ class LogBook(models.Model):
 
 def pre_save_log_id_receiver(sender, instance, *args, **kwargs):
     if not instance.log_id:
-        instance.log_id = uniqu_log_id_generator(instance)
+        instance.log_id = unique_log_id_generator(instance)
 
 pre_save.connect(pre_save_log_id_receiver, sender=LogBook)
 
