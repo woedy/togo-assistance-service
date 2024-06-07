@@ -328,6 +328,9 @@ def unique_booking_id_generator(instance):
         return None
     return booking_id
 
+
+
+
 def unique_log_id_generator(instance):
     """
     This is for a log_id field
@@ -342,3 +345,124 @@ def unique_log_id_generator(instance):
     if qs_exists:
         return None
     return log_id
+
+
+
+
+
+def unique_category_id_generator(instance):
+    """
+    This is for a category_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    category_id = "CAT-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(RY)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(category_id=category_id).exists()
+    if qs_exists:
+        return None
+    return category_id
+
+
+
+def unique_equipment_id_generator(instance):
+    """
+    This is for a equipment_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    equipment_id = "EQ-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NT)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(equipment_id=equipment_id).exists()
+    if qs_exists:
+        return None
+    return equipment_id
+
+
+
+def unique_inventory_id_generator(instance):
+    """
+    This is for a inventory_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    inventory_id = "INV-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(RY)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(inventory_id=inventory_id).exists()
+    if qs_exists:
+        return None
+    return inventory_id
+
+
+def unique_assignment_id_generator(instance):
+    """
+    This is for a assignment_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    inventory_id = "ASS-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NT)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(inventory_id=inventory_id).exists()
+    if qs_exists:
+        return None
+    return inventory_id
+
+
+
+def unique_order_id_generator(instance):
+    """
+    This is for a order_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    order_id = "ORD-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(ER)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(order_id=order_id).exists()
+    if qs_exists:
+        return None
+    return order_id
+
+
+
+def unique_order_item_id_generator(instance):
+    """
+    This is for a order_item_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    order_item_id = "ORD/IT-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(IT)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(order_item_id=order_item_id).exists()
+    if qs_exists:
+        return None
+    return order_item_id
+
+
+
+
+def unique_maintenance_id_generator(instance):
+    """
+    This is for a maintenance_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    maintenance_id = "MAINT-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NCE)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(maintenance_id=maintenance_id).exists()
+    if qs_exists:
+        return None
+    return maintenance_id

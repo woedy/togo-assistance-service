@@ -2,10 +2,14 @@ from django.db import models
 from django.db.models.signals import pre_save
 
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_supplier_id_generator
+from tas_project.utils import unique_supplier_id_generator, unique_category_id_generator, unique_equipment_id_generator, \
+    unique_inventory_id_generator, unique_assignment_id_generator, unique_order_id_generator, \
+    unique_order_item_id_generator, unique_maintenance_id_generator
 
 
 class Category(models.Model):
+    category_id = models.CharField(max_length=200, null=True, blank=True)
+
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
 
@@ -16,6 +20,15 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+def pre_save_category_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.category_id:
+        instance.category_id = unique_category_id_generator(instance)
+
+pre_save.connect(pre_save_category_id_receiver, sender=Category)
+
+
+
 
 class Supplier(models.Model):
     supplier_id = models.CharField(max_length=200, null=True, blank=True)
@@ -47,6 +60,7 @@ pre_save.connect(pre_save_supplier_id_receiver, sender=Supplier)
 
 
 class Equipment(models.Model):
+    equipment_id = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True)
@@ -67,8 +81,20 @@ class Equipment(models.Model):
         return self.name
 
 
+def pre_save_equipment_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.equipment_id:
+        instance.equipment_id = unique_equipment_id_generator(instance)
+
+pre_save.connect(pre_save_equipment_id_receiver, sender=Equipment)
+
+
+
+
+
 
 class Inventory(models.Model):
+    inventory_id = models.CharField(max_length=200, null=True, blank=True)
+
     equipment = models.OneToOneField(Equipment, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
     last_updated = models.DateTimeField(auto_now=True)
@@ -82,8 +108,17 @@ class Inventory(models.Model):
         return f"{self.item.name} - {self.quantity}"
 
 
+def pre_save_inventory_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.inventory_id:
+        instance.inventory_id = unique_inventory_id_generator(instance)
+
+pre_save.connect(pre_save_inventory_id_receiver, sender=Inventory)
+
+
 
 class Assignment(models.Model):
+    assignment_id = models.CharField(max_length=200, null=True, blank=True)
+
     guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE)
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
@@ -98,7 +133,18 @@ class Assignment(models.Model):
     def __str__(self):
         return f"{self.quantity} x {self.item.name} to {self.guard}"
 
+
+def pre_save_assignment_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.assignment_id:
+        instance.assignment_id = unique_assignment_id_generator(instance)
+
+pre_save.connect(pre_save_assignment_id_receiver, sender=Assignment)
+
+
+
 class Order(models.Model):
+    order_id = models.CharField(max_length=200, null=True, blank=True)
+
     status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Completed', 'Completed'), ('Cancelled', 'Cancelled')], default='Pending')
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True)
 
@@ -111,8 +157,17 @@ class Order(models.Model):
         return f"Order {self.id} - {self.status}"
 
 
+def pre_save_order_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.order_id:
+        instance.order_id = unique_order_id_generator(instance)
+
+
+pre_save.connect(pre_save_order_id_receiver, sender=Order)
+
 
 class OrderItem(models.Model):
+    order_item_id = models.CharField(max_length=200, null=True, blank=True)
+
     order = models.ForeignKey(Order, related_name='equipments', on_delete=models.CASCADE)
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
@@ -129,7 +184,20 @@ class OrderItem(models.Model):
     def get_total_price(self):
         return self.quantity * self.price
 
+
+
+def pre_save_order_item_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.order_item_id:
+        instance.order_item_id = unique_order_item_id_generator(instance)
+
+
+pre_save.connect(pre_save_order_item_id_receiver, sender=OrderItem)
+
+
+
 class Maintenance(models.Model):
+    maintenance_id = models.CharField(max_length=200, null=True, blank=True)
+
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     scheduled_date = models.DateField()
     completed_date = models.DateField(null=True, blank=True)
@@ -142,3 +210,11 @@ class Maintenance(models.Model):
 
     def __str__(self):
         return f'Maintenance for {self.equipment.name} on {self.scheduled_date}'
+
+
+
+def pre_save_maintenance_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.maintenance_id:
+        instance.maintenance_id = unique_maintenance_id_generator(instance)
+
+pre_save.connect(pre_save_maintenance_id_receiver, sender=Maintenance)

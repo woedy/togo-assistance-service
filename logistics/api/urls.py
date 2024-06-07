@@ -1,6 +1,6 @@
 from django.urls import path
 
-from logistics.api.views import add_supplier, edit_supplier, get_all_supplier_view, get_supplier_details_view, \
+from logistics.api.views.supply_views import add_supplier, edit_supplier, get_all_supplier_view, get_supplier_details_view, \
     archive_supplier, delete_supplier, unarchive_supplier, get_all_archived_suppliers_view
 
 app_name = 'logistics'

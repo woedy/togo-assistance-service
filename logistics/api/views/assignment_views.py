@@ -3,19 +3,14 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from accounts.api.views import is_valid_email, check_email_exist
-from activities.models import AllActivity
-from clients.api.serializers import AllClientsSerializer, ClientDetailsSerializer
-
-from clients.models import Client, ClientComplaint
-from logistics.api.serializers import SupplierDetailsSerializer, AllSupplierSerializer
-from logistics.models import Supplier
+from accounts.api.views import is_valid_email
+from logistics.api.serializers import AllAssignmentSerializer, AssignmentDetailsSerializer
+from logistics.models import Assignment
 
 User = get_user_model()
 
@@ -23,7 +18,7 @@ User = get_user_model()
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def add_supplier(request):
+def add_assignment(request):
     payload = {}
     data = {}
     errors = {}
@@ -52,7 +47,7 @@ def add_supplier(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
 
-        new_supplier = Supplier.objects.create(
+        new_assignment = Assignment.objects.create(
             name=name,
             phone_number=phone_number,
             email=email,
@@ -61,7 +56,7 @@ def add_supplier(request):
 
 
 
-        data["supplier_id"] = new_supplier.supplier_id
+        data["assignment_id"] = new_assignment.assignment_id
 
 
         payload['message'] = "Successful"
@@ -75,7 +70,7 @@ def add_supplier(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_supplier_view(request):
+def get_all_assignment_view(request):
     payload = {}
     data = {}
     errors = {}
@@ -84,11 +79,11 @@ def get_all_supplier_view(request):
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
-    all_suppliers = Supplier.objects.all().filter(is_archived=False)
+    all_assignments = Assignment.objects.all().filter(is_archived=False)
 
 
     if search_query:
-        all_suppliers = all_suppliers.filter(
+        all_assignments = all_assignments.filter(
             Q(name__icontains=search_query) |
             Q(phone_number__icontains=search_query) |
             Q(email_number__icontains=search_query) |
@@ -96,24 +91,24 @@ def get_all_supplier_view(request):
         )
 
 
-    paginator = Paginator(all_suppliers, page_size)
+    paginator = Paginator(all_assignments, page_size)
 
     try:
-        paginated_suppliers = paginator.page(page_number)
+        paginated_assignments = paginator.page(page_number)
     except PageNotAnInteger:
-        paginated_suppliers = paginator.page(1)
+        paginated_assignments = paginator.page(1)
     except EmptyPage:
-        paginated_suppliers = paginator.page(paginator.num_pages)
+        paginated_assignments = paginator.page(paginator.num_pages)
 
-    all_suppliers_serializer = AllSupplierSerializer(paginated_suppliers, many=True)
+    all_assignments_serializer = AllAssignmentSerializer(paginated_assignments, many=True)
 
 
-    data['suppliers'] = all_suppliers_serializer.data
+    data['assignments'] = all_assignments_serializer.data
     data['pagination'] = {
-        'page_number': paginated_suppliers.number,
+        'page_number': paginated_assignments.number,
         'total_pages': paginator.num_pages,
-        'next': paginated_suppliers.next_page_number() if paginated_suppliers.has_next() else None,
-        'previous': paginated_suppliers.previous_page_number() if paginated_suppliers.has_previous() else None,
+        'next': paginated_assignments.next_page_number() if paginated_assignments.has_next() else None,
+        'previous': paginated_assignments.previous_page_number() if paginated_assignments.has_previous() else None,
     }
 
     payload['message'] = "Successful"
@@ -125,33 +120,33 @@ def get_all_supplier_view(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_supplier_details_view(request):
+def get_assignment_details_view(request):
     payload = {}
     data = {}
     errors = {}
 
-    supplier_id = request.query_params.get('supplier_id', None)
+    assignment_id = request.query_params.get('assignment_id', None)
 
-    if not supplier_id:
-        errors['supplier_id'] = ["Supplier id required"]
+    if not assignment_id:
+        errors['assignment_id'] = ["Assignment id required"]
 
     try:
-        supplier = Supplier.objects.get(supplier_id=supplier_id)
+        assignment = Assignment.objects.get(assignment_id=assignment_id)
     except:
-        errors['supplier_id'] = ['Supplier does not exist.']
+        errors['assignment_id'] = ['Assignment does not exist.']
 
     if errors:
         payload['message'] = "Errors"
         payload['errors'] = errors
         return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-    supplier_serializer = SupplierDetailsSerializer(supplier, many=False)
-    if supplier_serializer:
-        supplier = supplier_serializer.data
+    assignment_serializer = AssignmentDetailsSerializer(assignment, many=False)
+    if assignment_serializer:
+        assignment = assignment_serializer.data
 
 
     payload['message'] = "Successful"
-    payload['data'] = supplier
+    payload['data'] = assignment
 
     return Response(payload, status=status.HTTP_200_OK)
 
@@ -159,13 +154,13 @@ def get_supplier_details_view(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def edit_supplier(request):
+def edit_assignment(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        supplier_id = request.data.get('supplier_id', "")
+        assignment_id = request.data.get('assignment_id', "")
 
         email = request.data.get('email', "").lower()
         name = request.data.get('name', "")
@@ -184,9 +179,9 @@ def edit_supplier(request):
             errors['phone_number'] = ['Phone is required.']
 
         try:
-            supplier = Supplier.objects.get(supplier_id=supplier_id)
+            assignment = Assignment.objects.get(assignment_id=assignment_id)
         except:
-            errors['supplier_id'] = ['Supplier does not exist.']
+            errors['assignment_id'] = ['Assignment does not exist.']
 
 
         if errors:
@@ -194,13 +189,13 @@ def edit_supplier(request):
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        supplier.name = name
-        supplier.phone_number = phone_number
-        supplier.email = email
-        supplier.address = address
-        supplier.save()
+        assignment.name = name
+        assignment.phone_number = phone_number
+        assignment.email = email
+        assignment.address = address
+        assignment.save()
 
-        data["supplier_id"] = supplier.supplier_id
+        data["assignment_id"] = assignment.assignment_id
 
 
         payload['message'] = "Successful"
@@ -213,21 +208,21 @@ def edit_supplier(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def archive_supplier(request):
+def archive_assignment(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        supplier_id = request.data.get('supplier_id', "")
+        assignment_id = request.data.get('assignment_id', "")
 
-        if not supplier_id:
-            errors['supplier_id'] = ['Supplier ID is required.']
+        if not assignment_id:
+            errors['assignment_id'] = ['Assignment ID is required.']
 
         try:
-            supplier = Supplier.objects.get(supplier_id=supplier_id)
+            assignment = Assignment.objects.get(assignment_id=assignment_id)
         except:
-            errors['supplier_id'] = ['Supplier does not exist.']
+            errors['assignment_id'] = ['Assignment does not exist.']
 
 
         if errors:
@@ -235,8 +230,8 @@ def archive_supplier(request):
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        supplier.is_archived = True
-        supplier.save()
+        assignment.is_archived = True
+        assignment.save()
 
 
 
@@ -250,28 +245,28 @@ def archive_supplier(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def delete_supplier(request):
+def delete_assignment(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        supplier_id = request.data.get('supplier_id', "")
+        assignment_id = request.data.get('assignment_id', "")
 
-        if not supplier_id:
-            errors['supplier_id'] = ['Supplier ID is required.']
+        if not assignment_id:
+            errors['assignment_id'] = ['Assignment ID is required.']
 
         try:
-            supplier = Supplier.objects.get(supplier_id=supplier_id)
+            assignment = Assignment.objects.get(assignment_id=assignment_id)
         except:
-            errors['supplier_id'] = ['Supplier does not exist.']
+            errors['assignment_id'] = ['Assignment does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        supplier.delete()
+        assignment.delete()
 
 
         payload['message'] = "Successful"
@@ -284,29 +279,29 @@ def delete_supplier(request):
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def unarchive_supplier(request):
+def unarchive_assignment(request):
     payload = {}
     data = {}
     errors = {}
 
     if request.method == 'POST':
-        supplier_id = request.data.get('supplier_id', "")
+        assignment_id = request.data.get('assignment_id', "")
 
-        if not supplier_id:
-            errors['supplier_id'] = ['Supplier ID is required.']
+        if not assignment_id:
+            errors['assignment_id'] = ['Assignment ID is required.']
 
         try:
-            supplier = Supplier.objects.get(supplier_id=supplier_id)
+            assignment = Assignment.objects.get(assignment_id=assignment_id)
         except:
-            errors['supplier_id'] = ['Supplier does not exist.']
+            errors['assignment_id'] = ['Assignment does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        supplier.is_archived = False
-        supplier.save()
+        assignment.is_archived = False
+        assignment.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -317,7 +312,7 @@ def unarchive_supplier(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_archived_suppliers_view(request):
+def get_all_archived_assignments_view(request):
     payload = {}
     data = {}
     errors = {}
@@ -326,11 +321,11 @@ def get_all_archived_suppliers_view(request):
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
-    all_suppliers = Supplier.objects.all().filter(is_archived=True)
+    all_assignments = Assignment.objects.all().filter(is_archived=True)
 
 
     if search_query:
-        all_suppliers = all_suppliers.filter(
+        all_assignments = all_assignments.filter(
             Q(name__icontains=search_query) |
             Q(phone_number__icontains=search_query) |
             Q(email_number__icontains=search_query) |
@@ -342,24 +337,24 @@ def get_all_archived_suppliers_view(request):
 
 
 
-    paginator = Paginator(all_suppliers, page_size)
+    paginator = Paginator(all_assignments, page_size)
 
     try:
-        paginated_suppliers = paginator.page(page_number)
+        paginated_assignments = paginator.page(page_number)
     except PageNotAnInteger:
-        paginated_suppliers = paginator.page(1)
+        paginated_assignments = paginator.page(1)
     except EmptyPage:
-        paginated_suppliers = paginator.page(paginator.num_pages)
+        paginated_assignments = paginator.page(paginator.num_pages)
 
-    all_suppliers_serializer = AllSupplierSerializer(paginated_suppliers, many=True)
+    all_assignments_serializer = AllAssignmentSerializer(paginated_assignments, many=True)
 
 
-    data['suppliers'] = all_suppliers_serializer.data
+    data['assignments'] = all_assignments_serializer.data
     data['pagination'] = {
-        'page_number': paginated_suppliers.number,
+        'page_number': paginated_assignments.number,
         'total_pages': paginator.num_pages,
-        'next': paginated_suppliers.next_page_number() if paginated_suppliers.has_next() else None,
-        'previous': paginated_suppliers.previous_page_number() if paginated_suppliers.has_previous() else None,
+        'next': paginated_assignments.next_page_number() if paginated_assignments.has_next() else None,
+        'previous': paginated_assignments.previous_page_number() if paginated_assignments.has_previous() else None,
     }
 
     payload['message'] = "Successful"
