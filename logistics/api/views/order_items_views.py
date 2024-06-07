@@ -96,7 +96,10 @@ def get_all_order_item_view(request):
 
     if search_query:
         all_order_items = all_order_items.filter(
-            Q(order_item_id__icontains=search_query)
+            Q(order_item_id__icontains=search_query) |
+            Q(equipment__icontains=search_query) |
+            Q(quantity__icontains=search_query) |
+            Q(price__icontains=search_query)
         )
 
 
@@ -331,13 +334,12 @@ def get_all_archived_order_items_view(request):
 
     if search_query:
         all_order_items = all_order_items.filter(
-            Q(name__icontains=search_query)
-
+            Q(order_item_id__icontains=search_query) |
+            Q(equipment__icontains=search_query) |
+            Q(quantity__icontains=search_query) |
+            Q(price__icontains=search_query)
 
         )
-
-
-
 
     paginator = Paginator(all_order_items, page_size)
 
@@ -349,7 +351,6 @@ def get_all_archived_order_items_view(request):
         paginated_order_items = paginator.page(paginator.num_pages)
 
     all_order_items_serializer = AllOrderItemSerializer(paginated_order_items, many=True)
-
 
     data['order_items'] = all_order_items_serializer.data
     data['pagination'] = {

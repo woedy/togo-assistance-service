@@ -122,7 +122,7 @@ class Assignment(models.Model):
     guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE)
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
-    assigned_at = models.DateTimeField(auto_now_add=True)
+
     return_due_date = models.DateField(blank=True, null=True)
 
     is_archived = models.BooleanField(default=False)

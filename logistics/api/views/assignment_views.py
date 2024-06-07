@@ -10,7 +10,8 @@ from rest_framework.response import Response
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from accounts.api.views import is_valid_email
 from logistics.api.serializers import AllAssignmentSerializer, AssignmentDetailsSerializer
-from logistics.models import Assignment
+from logistics.models import Assignment, Equipment
+from security_team.models import SecurityGuard
 
 User = get_user_model()
 
@@ -24,21 +25,34 @@ def add_assignment(request):
     errors = {}
 
     if request.method == 'POST':
-        email = request.data.get('email', "").lower()
-        name = request.data.get('name', "")
-        phone_number = request.data.get('phone_number', "")
-        address = request.data.get('address', "")
+        guard_id = request.data.get('guard_id', "")
+        equipment_id = request.data.get('equipment_id', "")
+        quantity = request.data.get('quantity', "")
+        return_due_date = request.data.get('return_due_date', "")
 
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
+        if not guard_id:
+            errors['guard_id'] = ['Guard ID is required.']
 
-        if not name:
-            errors['name'] = ['Name is required.']
 
-        if not phone_number:
-            errors['phone_number'] = ['Phone is required.']
+        if not equipment_id:
+            errors['equipment_id'] = ['Equipment ID is required.']
+
+        if not quantity:
+            errors['quantity'] = ['Quantity is required.']
+
+        if not return_due_date:
+            errors['return_due_date'] = ['Return due date is required.']
+
+
+        try:
+            guard = SecurityGuard.objects.get(guard_id=guard_id)
+        except:
+            errors['guard_id'] = ['Guard does not exist.']
+
+        try:
+            equipment = Equipment.objects.get(equipment_id=equipment_id)
+        except:
+            errors['equipment_id'] = ['Equipment does not exist.']
 
 
         if errors:
@@ -48,10 +62,10 @@ def add_assignment(request):
 
 
         new_assignment = Assignment.objects.create(
-            name=name,
-            phone_number=phone_number,
-            email=email,
-            address=address
+            guard=guard,
+            equipment=equipment,
+            quantity=quantity,
+            return_due_date=return_due_date
         )
 
 
@@ -84,10 +98,11 @@ def get_all_assignment_view(request):
 
     if search_query:
         all_assignments = all_assignments.filter(
-            Q(name__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
+            Q(guard__user_first_name__icontains=search_query) |
+            Q(guard__user_last_name__icontains=search_query) |
+            Q(equipment_name__icontains=search_query) |
+            Q(quantity__icontains=search_query) |
+            Q(return_due_date__icontains=search_query)
         )
 
 
@@ -161,27 +176,45 @@ def edit_assignment(request):
 
     if request.method == 'POST':
         assignment_id = request.data.get('assignment_id', "")
+        guard_id = request.data.get('guard_id', "")
+        equipment_id = request.data.get('equipment_id', "")
+        quantity = request.data.get('quantity', "")
+        return_due_date = request.data.get('return_due_date', "")
 
-        email = request.data.get('email', "").lower()
-        name = request.data.get('name', "")
-        phone_number = request.data.get('phone_number', "")
-        address = request.data.get('address', "")
+        if not assignment_id:
+            errors['assignment_id'] = ['Assignment ID is required.']
 
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
 
-        if not name:
-            errors['name'] = ['Name is required.']
+        if not guard_id:
+            errors['guard_id'] = ['Guard ID is required.']
 
-        if not phone_number:
-            errors['phone_number'] = ['Phone is required.']
+
+        if not equipment_id:
+            errors['equipment_id'] = ['Equipment ID is required.']
+
+        if not quantity:
+            errors['quantity'] = ['Quantity is required.']
+
+        if not return_due_date:
+            errors['return_due_date'] = ['Return due date is required.']
+
 
         try:
-            assignment = Assignment.objects.get(assignment_id=assignment_id)
+            guard = SecurityGuard.objects.get(guard_id=guard_id)
+        except:
+            errors['guard_id'] = ['Guard does not exist.']
+
+        try:
+            equipment = Equipment.objects.get(equipment_id=equipment_id)
+        except:
+            errors['equipment_id'] = ['Equipment does not exist.']
+
+
+        try:
+            assignment = Assignment.objects.get(equipment_id=equipment_id)
         except:
             errors['assignment_id'] = ['Assignment does not exist.']
+
 
 
         if errors:
@@ -189,10 +222,10 @@ def edit_assignment(request):
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        assignment.name = name
-        assignment.phone_number = phone_number
-        assignment.email = email
-        assignment.address = address
+        assignment.guard = guard
+        assignment.equipment = equipment
+        assignment.quantity = quantity
+        assignment.return_due_date = return_due_date
         assignment.save()
 
         data["assignment_id"] = assignment.assignment_id
@@ -326,12 +359,11 @@ def get_all_archived_assignments_view(request):
 
     if search_query:
         all_assignments = all_assignments.filter(
-            Q(name__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
-
-
+            Q(guard__user_first_name__icontains=search_query) |
+            Q(guard__user_last_name__icontains=search_query) |
+            Q(equipment_name__icontains=search_query) |
+            Q(quantity__icontains=search_query) |
+            Q(return_due_date__icontains=search_query)
         )
 
 

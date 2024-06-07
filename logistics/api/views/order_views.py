@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from accounts.api.views import is_valid_email
 from logistics.api.serializers import AllOrderSerializer, OrderDetailsSerializer
-from logistics.models import Order
+from logistics.models import Order, Supplier
 
 User = get_user_model()
 
@@ -24,21 +24,16 @@ def add_order(request):
     errors = {}
 
     if request.method == 'POST':
-        email = request.data.get('email', "").lower()
-        name = request.data.get('name', "")
-        phone_number = request.data.get('phone_number', "")
-        address = request.data.get('address', "")
+        supplier_id = request.data.get('supplier_id', "")
 
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
+        if not supplier_id:
+            errors['supplier_id'] = ['Supplier ID is required.']
 
-        if not name:
-            errors['name'] = ['Name is required.']
+        try:
+            supplier = Supplier.objects.get(supplier_id=supplier_id)
+        except:
+            errors['supplier_id'] = ['Supplier is required.']
 
-        if not phone_number:
-            errors['phone_number'] = ['Phone is required.']
 
 
         if errors:
@@ -48,13 +43,9 @@ def add_order(request):
 
 
         new_order = Order.objects.create(
-            name=name,
-            phone_number=phone_number,
-            email=email,
-            address=address
+            status='Pending',
+            supplier=supplier
         )
-
-
 
         data["order_id"] = new_order.order_id
 
@@ -84,10 +75,8 @@ def get_all_order_view(request):
 
     if search_query:
         all_orders = all_orders.filter(
-            Q(name__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
+            Q(status__icontains=search_query) |
+            Q(supplier__name__icontains=search_query)
         )
 
 
@@ -160,39 +149,28 @@ def edit_order(request):
     errors = {}
 
     if request.method == 'POST':
-        order_id = request.data.get('order_id', "")
+        supplier_id = request.data.get('supplier_id', "")
 
-        email = request.data.get('email', "").lower()
-        name = request.data.get('name', "")
-        phone_number = request.data.get('phone_number', "")
-        address = request.data.get('address', "")
-
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
-
-        if not name:
-            errors['name'] = ['Name is required.']
-
-        if not phone_number:
-            errors['phone_number'] = ['Phone is required.']
+        if not status:
+            errors['status'] = ['Status is required.']
 
         try:
-            order = Order.objects.get(order_id=order_id)
+            supplier = Supplier.objects.get(supplier_id=supplier_id)
         except:
-            errors['order_id'] = ['Order does not exist.']
+            errors['supplier_id'] = ['Supplier is required.']
 
+        try:
+            order = Order.objects.get(su_id=supplier_id)
+        except:
+            errors['supplier_id'] = ['Supplier is required.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        order.name = name
-        order.phone_number = phone_number
-        order.email = email
-        order.address = address
+        order.name = status
+        order.supplier = supplier
         order.save()
 
         data["order_id"] = order.order_id
@@ -326,12 +304,8 @@ def get_all_archived_orders_view(request):
 
     if search_query:
         all_orders = all_orders.filter(
-            Q(name__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
-
-
+            Q(status__icontains=search_query) |
+            Q(supplier__name__icontains=search_query)
         )
 
 

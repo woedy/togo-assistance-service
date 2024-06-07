@@ -9,7 +9,8 @@ from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from accounts.api.views import is_valid_email
-from logistics.models import Maintenance
+from logistics.api.serializers import AllMaintenanceSerializer, MaintenanceDetailsSerializer
+from logistics.models import Maintenance, Equipment
 
 User = get_user_model()
 
@@ -23,21 +24,21 @@ def add_maintenance(request):
     errors = {}
 
     if request.method == 'POST':
-        email = request.data.get('email', "").lower()
-        name = request.data.get('name', "")
-        phone_number = request.data.get('phone_number', "")
-        address = request.data.get('address', "")
+        equipment_id = request.data.get('equipment_id', "")
+        scheduled_date = request.data.get('scheduled_date', "")
+        completed_date = request.data.get('completed_date', "")
+        notes = request.data.get('notes', "")
 
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
+        if not equipment_id:
+            errors['equipment_id'] = ['Equipment is required.']
 
-        if not name:
-            errors['name'] = ['Name is required.']
+        if not scheduled_date:
+            errors['scheduled_date'] = ['Scheduled Date is required.']
 
-        if not phone_number:
-            errors['phone_number'] = ['Phone is required.']
+        try:
+            equipment = Equipment.objects.get(equipment_id=equipment_id)
+        except:
+            errors['equipment_id'] = ['Equipment does not exist.']
 
 
         if errors:
@@ -47,13 +48,11 @@ def add_maintenance(request):
 
 
         new_maintenance = Maintenance.objects.create(
-            name=name,
-            phone_number=phone_number,
-            email=email,
-            address=address
+            equipment=equipment,
+            scheduled_date=scheduled_date,
+            completed_date=completed_date,
+            notes=notes
         )
-
-
 
         data["maintenance_id"] = new_maintenance.maintenance_id
 
@@ -83,10 +82,9 @@ def get_all_maintenance_view(request):
 
     if search_query:
         all_maintenances = all_maintenances.filter(
-            Q(name__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
+            Q(equipment_name__icontains=search_query) |
+            Q(scheduled_date__icontains=search_query) |
+            Q(completed_date__icontains=search_query)
         )
 
 
@@ -158,24 +156,26 @@ def edit_maintenance(request):
     data = {}
     errors = {}
 
+
     if request.method == 'POST':
         maintenance_id = request.data.get('maintenance_id', "")
+        equipment_id = request.data.get('equipment_id', "")
+        scheduled_date = request.data.get('scheduled_date', "")
+        completed_date = request.data.get('completed_date', "")
+        notes = request.data.get('notes', "")
 
-        email = request.data.get('email', "").lower()
-        name = request.data.get('name', "")
-        phone_number = request.data.get('phone_number', "")
-        address = request.data.get('address', "")
+        if not equipment_id:
+            errors['equipment_id'] = ['Equipment is required.']
 
-        if not email:
-            errors['email'] = ['User Email is required.']
-        elif not is_valid_email(email):
-            errors['email'] = ['Valid email required.']
+        if not scheduled_date:
+            errors['scheduled_date'] = ['Scheduled Date is required.']
 
-        if not name:
-            errors['name'] = ['Name is required.']
+        try:
+            equipment = Equipment.objects.get(equipment_id=equipment_id)
+        except:
+            errors['equipment_id'] = ['Equipment does not exist.']
 
-        if not phone_number:
-            errors['phone_number'] = ['Phone is required.']
+
 
         try:
             maintenance = Maintenance.objects.get(maintenance_id=maintenance_id)
@@ -188,10 +188,10 @@ def edit_maintenance(request):
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        maintenance.name = name
-        maintenance.phone_number = phone_number
-        maintenance.email = email
-        maintenance.address = address
+        maintenance.equipment = equipment
+        maintenance.scheduled_date = scheduled_date
+        maintenance.completed_date = completed_date
+        maintenance.notes = notes
         maintenance.save()
 
         data["maintenance_id"] = maintenance.maintenance_id
@@ -325,12 +325,9 @@ def get_all_archived_maintenances_view(request):
 
     if search_query:
         all_maintenances = all_maintenances.filter(
-            Q(name__icontains=search_query) |
-            Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
-
-
+            Q(equipment_name__icontains=search_query) |
+            Q(scheduled_date__icontains=search_query) |
+            Q(completed_date__icontains=search_query)
         )
 
 
