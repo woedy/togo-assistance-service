@@ -1,5 +1,6 @@
 from django.urls import path
 
+from logistics.api.views.category_views import add_category
 from logistics.api.views.supply_views import add_supplier, edit_supplier, get_all_supplier_view, get_supplier_details_view, \
     archive_supplier, delete_supplier, unarchive_supplier, get_all_archived_suppliers_view
 
@@ -15,5 +16,8 @@ urlpatterns = [
     path('unarchive-supplier/', unarchive_supplier, name="unarchive_supplier"),
     path('get-all-archived-suppliers/', get_all_archived_suppliers_view, name="get_all_archived_suppliers_view"),
 
+
+    ########## Categories ####
+    path('add-category/', add_category, name="add_category"),
 
 ]

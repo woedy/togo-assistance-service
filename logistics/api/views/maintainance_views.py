@@ -332,7 +332,6 @@ def get_all_archived_maintenances_view(request):
 
 
 
-
     paginator = Paginator(all_maintenances, page_size)
 
     try:
