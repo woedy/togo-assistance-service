@@ -30,6 +30,9 @@ def add_category(request):
         if not name:
             errors['name'] = ['Name is required.']
 
+        elif check_category_name_exist(name):
+            errors['name'] = ['Category name already exists in our database.']
+
 
         if errors:
             payload['message'] = "Errors"
@@ -42,8 +45,6 @@ def add_category(request):
             description=description,
         )
 
-
-
         data["category_id"] = new_category.category_id
 
 
@@ -51,6 +52,13 @@ def add_category(request):
         payload['data'] = data
 
     return Response(payload)
+
+def check_category_name_exist(name):
+    qs = Category.objects.filter(name=name)
+    if qs.exists():
+        return True
+    else:
+        return False
 
 
 
@@ -157,8 +165,9 @@ def edit_category(request):
         if not name:
             errors['name'] = ['Name is required.']
 
-        if not description:
-            errors['description'] = ['Description is required.']
+        elif check_category_name_exist(name):
+            errors['name'] = ['Category name already exists in our database.']
+
 
         try:
             category = Category.objects.get(category_id=category_id)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from logistics.api.views.category_views import add_category
+from logistics.api.views.category_views import add_category, edit_category
 from logistics.api.views.supply_views import add_supplier, edit_supplier, get_all_supplier_view, get_supplier_details_view, \
     archive_supplier, delete_supplier, unarchive_supplier, get_all_archived_suppliers_view
 
@@ -19,5 +19,6 @@ urlpatterns = [
 
     ########## Categories ####
     path('add-category/', add_category, name="add_category"),
+    path('edit-category/', edit_category, name="edit_category"),
 
 ]
