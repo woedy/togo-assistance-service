@@ -61,7 +61,7 @@ def add_order(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_order_view(request):
+def get_all_orders_view(request):
     payload = {}
     data = {}
     errors = {}
@@ -149,20 +149,28 @@ def edit_order(request):
     errors = {}
 
     if request.method == 'POST':
+        order_id = request.data.get('order_id', "")
         supplier_id = request.data.get('supplier_id', "")
+        status = request.data.get('status', "")
 
         if not status:
             errors['status'] = ['Status is required.']
 
+        if not order_id:
+            errors['order_id'] = ['Order ID is required.']
+
+        if not supplier_id:
+            errors['supplier_id'] = ['Supplier ID is required.']
+
         try:
             supplier = Supplier.objects.get(supplier_id=supplier_id)
         except:
-            errors['supplier_id'] = ['Supplier is required.']
+            errors['supplier_id'] = ['Supplier does not exist.']
 
         try:
-            order = Order.objects.get(su_id=supplier_id)
+            order = Order.objects.get(order_id=order_id)
         except:
-            errors['supplier_id'] = ['Supplier is required.']
+            errors['order_id'] = ['Order does not exist.']
 
         if errors:
             payload['message'] = "Errors"

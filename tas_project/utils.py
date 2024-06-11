@@ -407,13 +407,13 @@ def unique_assignment_id_generator(instance):
     :return:
     """
     size = random.randint(5, 7)
-    inventory_id = "ASS-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NT)"
+    assignment_id = "ASS-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NT)"
 
     Klass = instance.__class__
-    qs_exists = Klass.objects.filter(inventory_id=inventory_id).exists()
+    qs_exists = Klass.objects.filter(assignment_id=assignment_id).exists()
     if qs_exists:
         return None
-    return inventory_id
+    return assignment_id
 
 
 

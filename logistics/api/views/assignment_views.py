@@ -84,7 +84,7 @@ def add_assignment(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_assignment_view(request):
+def get_all_assignments_view(request):
     payload = {}
     data = {}
     errors = {}
@@ -211,7 +211,7 @@ def edit_assignment(request):
 
 
         try:
-            assignment = Assignment.objects.get(equipment_id=equipment_id)
+            assignment = Assignment.objects.get(assignment_id=assignment_id)
         except:
             errors['assignment_id'] = ['Assignment does not exist.']
 

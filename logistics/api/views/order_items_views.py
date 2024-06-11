@@ -82,7 +82,7 @@ def add_order_item(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_order_item_view(request):
+def get_all_order_items_view(request):
     payload = {}
     data = {}
     errors = {}
