@@ -35,6 +35,16 @@ def add_equipment(request):
         if not name:
             errors['name'] = ['Name is required.']
 
+        if not category_id:
+            errors['category_id'] = ['Category ID is required.']
+
+        if not supplier_id:
+            errors['supplier_id'] = ['Supplier ID is required.']
+
+        elif check_equipment_name_exist(name):
+            errors['name'] = ['Equipment name already exists in our database.']
+
+
         if not serial_number:
             errors['serial_number'] = ['Serial Number is required.']
 
@@ -44,7 +54,7 @@ def add_equipment(request):
         try:
             category = Category.objects.get(category_id=category_id)
         except:
-            errors['category'] = ['Category does not exist.']
+            errors['category_id'] = ['Category does not exist.']
 
         try:
             supplier = Supplier.objects.get(supplier_id=supplier_id)
@@ -78,7 +88,12 @@ def add_equipment(request):
     return Response(payload)
 
 
-
+def check_equipment_name_exist(name):
+    qs = Equipment.objects.filter(name=name)
+    if qs.exists():
+        return True
+    else:
+        return False
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
@@ -189,6 +204,16 @@ def edit_equipment(request):
         if not name:
             errors['name'] = ['Name is required.']
 
+        if not category_id:
+            errors['category_id'] = ['Category ID is required.']
+
+        if not supplier_id:
+            errors['supplier_id'] = ['Supplier ID is required.']
+
+        elif check_equipment_name_exist(name):
+            errors['name'] = ['Equipment name already exists in our database.']
+
+
         if not serial_number:
             errors['serial_number'] = ['Serial Number is required.']
 
@@ -198,12 +223,13 @@ def edit_equipment(request):
         try:
             category = Category.objects.get(category_id=category_id)
         except:
-            errors['category'] = ['Category does not exist.']
+            errors['category_id'] = ['Category does not exist.']
 
         try:
             supplier = Supplier.objects.get(supplier_id=supplier_id)
         except:
             errors['supplier_id'] = ['Supplier does not exist.']
+
 
 
         try:
