@@ -34,6 +34,8 @@ def add_client(request):
         phone = request.data.get('phone', "")
         purpose = request.data.get('purpose', "")
         photo = request.data.get('photo', "")
+        person_in_charge = request.data.get('person_in_charge', "")
+        client_type = request.data.get('client_type', "")
 
         if not email:
             errors['email'] = ['User Email is required.']
@@ -57,6 +59,9 @@ def add_client(request):
         if not purpose:
             errors['purpose'] = ['Purpose is required.']
 
+        if not client_type:
+            errors['client_type'] = ['Client Type is required.']
+
 
         if errors:
             payload['message'] = "Errors"
@@ -76,7 +81,9 @@ def add_client(request):
         client_profile = Client.objects.create(
             user=user,
             purpose=purpose,
-            company_name=company_name
+            company_name=company_name,
+            person_in_charge=person_in_charge,
+            client_type=client_type,
 
         )
 
@@ -228,7 +235,10 @@ def edit_client(request):
         first_name = request.data.get('first_name', "")
         last_name = request.data.get('last_name', "")
         phone = request.data.get('phone', "")
+        purpose = request.data.get('purpose', "")
         gender = request.data.get('gender', "")
+        person_in_charge = request.data.get('person_in_charge', "")
+        client_type = request.data.get('client_type', "")
 
         if not client_id:
             errors['client_id'] = ['Client ID is required.']
@@ -250,6 +260,12 @@ def edit_client(request):
         if not last_name:
             errors['last_name'] = ['Last Name is required.']
 
+        if not purpose:
+            errors['purpose'] = ['Purpose is required.']
+
+        if not client_type:
+            errors['client_type'] = ['Client Type is required.']
+
         try:
             client_profile = Client.objects.get(client_id=client_id)
         except:
@@ -267,6 +283,9 @@ def edit_client(request):
         client_profile.user.save()
 
         client_profile.gender = gender
+        client_profile.purpose = purpose
+        client_profile.person_in_charge = person_in_charge
+        client_profile.client_type = client_type
         client_profile.save()
 
         data["user_id"] = client_profile.user.user_id

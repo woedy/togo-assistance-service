@@ -133,7 +133,7 @@ def add_log_view(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
 
-        new = LogBook.objects.create(
+        new_log = LogBook.objects.create(
             first_name=first_name,
             last_name=last_name,
             phone=phone,
@@ -142,6 +142,86 @@ def add_log_view(request):
             client=client,
             contact_type=contact_type
         )
+
+        data['log_id'] = new_log.log_id
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def edit_log_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        log_id = request.data.get('log_id', "")
+        first_name = request.data.get('first_name', "")
+        last_name = request.data.get('last_name', "")
+        phone = request.data.get('phone', "")
+        purpose = request.data.get('purpose', "")
+        _status = request.data.get('status', "")
+        client_id = request.data.get('client_id', "")
+        contact_type = request.data.get('contact_type', "")
+
+        if not log_id:
+            errors['log_id'] = ['Log ID is required.']
+
+        if not first_name:
+            errors['first_name'] = ['First Name is required.']
+
+        if not last_name:
+            errors['last_name'] = ['Last Name is required.']
+
+        if not phone:
+            errors['phone'] = ['Phone number is required.']
+
+        if not _status:
+            errors['status'] = ['Status is required.']
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
+
+        if not purpose:
+            errors['purpose'] = ['Purpose is required.']
+
+        if not contact_type:
+            errors['contact_type'] = ['Contact Type is required.']
+
+
+        try:
+            client = Client.objects.get(client_id=client_id)
+        except:
+            errors['client_id'] = ['Client does not exist.']
+
+        try:
+            log = LogBook.objects.get(log_id=log_id)
+        except:
+            errors['log_id'] = ['Log does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+        log.first_name=first_name
+        log.last_name=last_name
+        log.phone=phone
+        log.purpose=purpose
+        log.status=status
+        log.client=client
+        log.contact_type=contact_type
+        log.save()
+
+        data['log_id'] = log.log_id
 
         payload['message'] = "Successful"
         payload['data'] = data

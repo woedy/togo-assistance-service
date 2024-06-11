@@ -16,12 +16,7 @@ class AllClientsUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
-            'user_id',
-            'first_name',
-            'last_name',
-            'photo'
-        ]
+        fields = "__all__"
 
 
 class ClientDetailsSerializer(serializers.ModelSerializer):
@@ -35,10 +30,7 @@ class AllClientsSerializer(serializers.ModelSerializer):
     user = AllClientsUserSerializer(many=False)
     class Meta:
         model = Client
-        fields = [
-            'client_id',
-            'user',
-        ]
+        fields = "__all__"
 
 
 

@@ -57,13 +57,18 @@ PURPOSE_CHOICES = (
 )
 
 
-
+CLIENT_TYPE_CHOICES = (
+    ('Physical', 'Physical'),
+    ('Moral', 'Moral')
+)
 
 class Client(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
     client_id = models.CharField(max_length=200, null=True, blank=True)
     company_name = models.CharField(max_length=500, null=True, blank=True)
     purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
+    client_type = models.CharField(choices=CLIENT_TYPE_CHOICES, null=True, blank=True, max_length=200)
+    person_in_charge = models.CharField(null=True, blank=True, max_length=500)
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
