@@ -70,7 +70,7 @@ def add_inventory(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
-def get_all_inventory_view(request):
+def get_all_inventorys_view(request):
     payload = {}
     data = {}
     errors = {}
