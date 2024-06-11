@@ -1,11 +1,11 @@
 from django.urls import path
 
-from clients.api.views import add_client, get_all_clients_view, get_client_details_view, edit_client, archive_client, \
-    get_all_archived_clients_view, unarchive_client, delete_client
-from secretary.api.views import get_secretary_dashboard
+from security_team.api.views.slot_views import set_guard_availability, list_guard_availability
 
-app_name = 'client'
+app_name = 'security_team'
 
 urlpatterns = [
-    path('get-secretary-dashboard/', get_secretary_dashboard, name="get_secretary_dashboard"),
+    path('set-guard-availability/', set_guard_availability, name="set_guard_availability"),
+    path('list-guard-availability/', list_guard_availability, name="list_guard_availability"),
+
 ]

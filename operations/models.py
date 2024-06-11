@@ -11,12 +11,23 @@ from tas_project.utils import unique_operations_id_generator
 User = get_user_model()
 
 
+
+ROLE_CHOICES = (
+    ('Supervisor', 'Supervisor'),
+    ('Assigner', 'Assigner'),
+    ('Logistics', 'Logistics'),
+)
+
+
+
 class Operation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='operations')
     operations_id = models.CharField(max_length=200, null=True, blank=True)
     room = models.ForeignKey(PrivateChatRoom, on_delete=models.SET_NULL, null=True, blank=True, related_name="operations_user_room")
 
     profile_complete = models.BooleanField(default=False)
+
+    role = models.CharField(choices=ROLE_CHOICES, null=True, blank=True, max_length=200)
 
     currently_checked_in = models.BooleanField(default=False)
     last_worked = models.DateTimeField(blank=True, null=True)

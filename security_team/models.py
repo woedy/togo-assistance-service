@@ -279,3 +279,49 @@ class SecurityGuardTask(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+
+
+
+
+
+
+######################## GUARD AVAILABILITY
+
+
+SLOT_STATE_CHOICES = (
+    ("Vacant", "Vacant"),
+    ("Partial", "Partial"),
+    ("Occupied", "Occupied")
+)
+
+class GuardAvailability(models.Model):
+    guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE, related_name="guard_availabilities")
+
+    slot_date = models.DateField(null=True, blank=True)
+    state = models.CharField(default="Vacant", choices=SLOT_STATE_CHOICES, max_length=255)
+
+    is_recurring = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+class TimeSlot(models.Model):
+    guard_slot = models.ForeignKey(GuardAvailability, on_delete=models.CASCADE, related_name="availability_time_slots")
+    booking_id = models.IntegerField(null=True, blank=True)
+
+    time = models.TimeField(null=True, blank=True)
+
+    occupied = models.BooleanField(default=False)
+    occupant = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL,
+                                 related_name="booking_occupant")
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

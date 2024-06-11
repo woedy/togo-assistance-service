@@ -9,6 +9,7 @@ from accounts.api.custom_jwt import CustomJWTAuthentication
 from clients.api.serializers import ClientDetailsSerializer, ClientComplaintSerializer
 
 from clients.models import Client, ClientComplaint
+from operations.models import Operation
 from reports.api.serializers import ReportSerializer
 from reports.models import Report
 from secretary.models import Secretary
@@ -76,4 +77,47 @@ def get_operations_dashboard(request):
     payload['data'] = data
 
     return Response(payload, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def update_role(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        operations_id = request.data.get('operations_id', "")
+        role = request.data.get('role', "")
+
+        if not role:
+            errors['role'] = ['Role is required.']
+
+        if not operations_id:
+            errors['operations_id'] = ['Operations ID Email is required.']
+
+
+        try:
+            operations = Operation.objects.get(operations_id=operations_id)
+        except:
+            errors['operations_id'] = ['Operations does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        operations.role = role
+        operations.save()
+
+
+        data["operations_id"] = operations.operations_id
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
 
