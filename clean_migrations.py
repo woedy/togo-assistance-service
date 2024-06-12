@@ -1,5 +1,6 @@
 import os
 import glob
+import shutil
 
 def find_base_directory():
     current_dir = os.getcwd()
@@ -27,9 +28,24 @@ def delete_migration_files(base_dir):
                     except Exception as e:
                         print(f'Failed to delete {file_path}: {e}')
 
+
+def remove_pycache(root_dir):
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        if '__pycache__' in dirnames:
+            if dirpath.endswith('.venv'):
+                # Skip .venv folder
+                dirnames.remove('__pycache__')
+            else:
+                pycache_dir = os.path.join(dirpath, '__pycache__')
+                shutil.rmtree(pycache_dir)
+                print(f"Removed: {pycache_dir}")
+
+
 if __name__ == "__main__":
     try:
         base_dir = find_base_directory()
         delete_migration_files(base_dir)
+        remove_pycache(base_dir)
+
     except Exception as e:
         print(f'Error: {e}')
