@@ -111,8 +111,8 @@ def add_log_view(request):
         if not _status:
             errors['status'] = ['Status is required.']
 
-        if not client_id:
-            errors['client_id'] = ['Client ID is required.']
+        #if not client_id:
+        #    errors['client_id'] = ['Client ID is required.']
 
         if not purpose:
             errors['purpose'] = ['Purpose is required.']
@@ -120,11 +120,13 @@ def add_log_view(request):
         if not contact_type:
             errors['contact_type'] = ['Contact Type is required.']
 
-
-        try:
-            client = Client.objects.get(client_id=client_id)
-        except:
-            errors['client_id'] = ['Client does not exist.']
+        if client_id:
+            try:
+                client = Client.objects.get(client_id=client_id)
+            except:
+                errors['client_id'] = ['Client does not exist.']
+        else:
+            pass
 
 
         if errors:
@@ -139,9 +141,12 @@ def add_log_view(request):
             phone=phone,
             purpose=purpose,
             status=_status,
-            client=client,
             contact_type=contact_type
         )
+
+        if client_id:
+            new_log.client = client
+            new_log.save()
 
         data['log_id'] = new_log.log_id
 

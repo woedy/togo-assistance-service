@@ -90,7 +90,7 @@ class LogBook(models.Model):
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_logs')
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True, related_name='client_logs')
 
     purpose = models.CharField(choices=PURPOSE_CHOICES, null=True, blank=True, max_length=200)
     contact_type = models.CharField(choices=CONTACT_TYPE_CHOICES, null=True, blank=True, max_length=200)
@@ -104,7 +104,7 @@ class LogBook(models.Model):
 
 
     def __str__(self):
-        return self.user.email
+        return self.first_name
 
 
 def pre_save_log_id_receiver(sender, instance, *args, **kwargs):
