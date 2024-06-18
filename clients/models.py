@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models.signals import post_save, pre_save
 
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_client_id_generator
+from tas_project.utils import unique_client_id_generator, unique_complaint_id_generator
 
 User = get_user_model()
 
@@ -100,7 +100,7 @@ class ClientContact(models.Model):
     address = models.TextField(blank=True, null=True)
 
 
-    is_deleted = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -113,6 +113,8 @@ class ClientGuardFile(models.Model):
     file_name = models.CharField(max_length=1000, null=True, blank=True)
     file_ext = models.CharField(max_length=255, null=True, blank=True)
 
+    is_archived = models.BooleanField(default=False)
+
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -123,6 +125,8 @@ class ClientNote(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="client_notes")
     title = models.CharField(max_length=1000, null=True, blank=True)
     note = models.TextField(null=True, blank=True)
+
+    is_archived = models.BooleanField(default=False)
 
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -146,18 +150,30 @@ DEPARTMENT = (
 
 
 class ClientComplaint(models.Model):
+    complaint_id = models.CharField(max_length=200, null=True, blank=True)
+
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="client_complaints")
     representative = models.CharField(max_length=1000, null=True, blank=True)
 
     title = models.CharField(max_length=1000, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    note = models.TextField(null=True, blank=True)
 
     forward_to = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    is_archived = models.BooleanField(default=False)
 
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+
+
+def pre_save_complaint_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.complaint_id:
+        instance.complaint_id = unique_complaint_id_generator(instance)
+
+pre_save.connect(pre_save_complaint_id_receiver, sender=ClientComplaint)
 
 
 

@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from clients.api.serializers import ClientDetailsSerializer, ClientComplaintSerializer
+from clients.api.serializers import ClientDetailsSerializer, AllClientComplaintsSerializer
 
 from clients.models import Client, ClientComplaint
 from operations.models import Operation
@@ -55,7 +55,7 @@ def get_operations_dashboard(request):
 
     _client_complaints = ClientComplaint.objects.all().order_by("-created_at")
 
-    client_complaints_serializer = ClientComplaintSerializer(_client_complaints, many=True)
+    client_complaints_serializer = AllClientComplaintsSerializer(_client_complaints, many=True)
     if client_complaints_serializer:
         _client_complaints = client_complaints_serializer.data
         recent_complaints = _client_complaints

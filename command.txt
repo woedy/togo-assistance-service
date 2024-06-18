@@ -16,6 +16,9 @@ sudo chattr -i mysite
 sudo rm -r mysite
 
 
+sudo chattr -i TasRemote
+sudo rm -r TasRemote
+
 
 sudo docker volume rm $(sudo docker volume ls -q)
 sudo docker rm -f $(sudo docker ps -a -q)

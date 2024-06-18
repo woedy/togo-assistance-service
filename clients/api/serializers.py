@@ -35,7 +35,15 @@ class AllClientsSerializer(serializers.ModelSerializer):
 
 
 
-class ClientComplaintSerializer(serializers.ModelSerializer):
+class ClientComplaintDetailSerializer(serializers.ModelSerializer):
+    client = ClientDetailsSerializer(many=False)
+
+    class Meta:
+        model = ClientComplaint
+        fields = "__all__"
+
+class AllClientComplaintsSerializer(serializers.ModelSerializer):
+    client = ClientDetailsSerializer(many=False)
     class Meta:
         model = ClientComplaint
         fields = "__all__"

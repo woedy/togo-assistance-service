@@ -186,6 +186,21 @@ def unique_client_id_generator(instance):
         return None
     return client_id
 
+def unique_complaint_id_generator(instance):
+    """
+    This is for a complaint_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    complaint_id = "COMP-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(C)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(complaint_id=complaint_id).exists()
+    if qs_exists:
+        return None
+    return complaint_id
+
 def unique_supplier_id_generator(instance):
     """
     This is for a supplier_id field
