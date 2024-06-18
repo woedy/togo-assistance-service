@@ -3,7 +3,8 @@ from django.urls import path
 from bookings.api.views import add_client_request_basic_info_view, add_client_request_basic_zone_view, \
     add_client_request_basic_zone_sites_view, add_client_request_date_times_view, get_all_client_requests, \
     get_client_request_details, edit_client_request, edit_client_request_zone, edit_client_request_zone_site, \
-    edit_client_request_datetime, archive_client_request, delete_client_request, unarchive_client_request
+    edit_client_request_datetime, archive_client_request, delete_client_request, unarchive_client_request, \
+    get_all_client_request_zones, get_all_client_zone_sites
 
 app_name = 'bookings'
 
@@ -24,5 +25,8 @@ urlpatterns = [
     path('archive-client-request/', archive_client_request, name="archive_client_request"),
     path('unarchive-client-request/', unarchive_client_request, name="unarchive_client_request"),
     path('delete-client-request/', delete_client_request, name="delete_client_request"),
+
+    path('get-all-client-request-zones/', get_all_client_request_zones, name="get_all_client_request_zones"),
+    path('get-all-client-zone-sites/', get_all_client_zone_sites, name="get_all_client_zone_sites"),
 
 ]

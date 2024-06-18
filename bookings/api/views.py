@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerializer
+from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerializer, AllClientZonesSerializer, \
+    AllClientPostSitesSerializer
 from bookings.models import Booking, BookDate
 from clients.models import Client
 from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite
@@ -678,4 +679,128 @@ def delete_client_request(request):
         payload['data'] = data
 
     return Response(payload)
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_client_request_zones(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    filter_zone = request.query_params.get('filter_zone', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+    all_zones = ClientZone.objects.all().filter(is_archived=False)
+
+
+    if search_query:
+        all_zones = all_zones.filter(
+            Q(zone_id__icontains=search_query) |
+            Q(client__user__user_id__icontains=search_query) |
+            Q(zone_name__icontains=search_query) |
+            Q(description__icontains=search_query)
+
+        )
+
+    if filter_zone:
+        all_zones = all_zones.filter(
+            Q(zone_id__icontains=filter_zone) |
+            Q(client__client_id__icontains=filter_zone)
+        )
+
+
+
+    paginator = Paginator(all_zones, page_size)
+
+    try:
+        paginated_zones = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_zones = paginator.page(1)
+    except EmptyPage:
+        paginated_zones = paginator.page(paginator.num_pages)
+
+    all_zones_serializer = AllClientZonesSerializer(paginated_zones, many=True)
+
+
+    data['bookings'] = all_zones_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_zones.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_zones.next_page_number() if paginated_zones.has_next() else None,
+        'previous': paginated_zones.previous_page_number() if paginated_zones.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_client_zone_sites(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    filter_site = request.query_params.get('filter_site', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+    all_sites = ClientPostSite.objects.all().filter(is_archived=False)
+
+
+    if search_query:
+        all_sites = all_sites.filter(
+            Q(zone_id__icontains=search_query) |
+            Q(client__user__user_id__icontains=search_query) |
+            Q(zone_name__icontains=search_query) |
+            Q(description__icontains=search_query)
+
+        )
+
+    if filter_site:
+        all_sites = all_sites.filter(
+            Q(site_id__icontains=filter_site) |
+            Q(client_zone__zone_id__icontains=filter_site) |
+            Q(client_zone__client__client_id__icontains=filter_site)
+        )
+
+
+
+    paginator = Paginator(all_sites, page_size)
+
+    try:
+        paginated_sites = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_sites = paginator.page(1)
+    except EmptyPage:
+        paginated_sites = paginator.page(paginator.num_pages)
+
+    all_sites_serializer = AllClientPostSitesSerializer(paginated_sites, many=True)
+
+
+    data['sites'] = all_sites_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_sites.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_sites.next_page_number() if paginated_sites.has_next() else None,
+        'previous': paginated_sites.previous_page_number() if paginated_sites.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
 
