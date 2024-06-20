@@ -325,3 +325,52 @@ class TimeSlot(models.Model):
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+
+
+
+    ############################# PAYROLL #######################
+
+    class PayPeriod(models.Model):
+        start_date = models.DateField()
+        end_date = models.DateField()
+        is_closed = models.BooleanField(default=False)
+
+        def __str__(self):
+            return f'{self.start_date} - {self.end_date}'
+
+    class PayrollEntry(models.Model):
+        guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE)
+        pay_period = models.ForeignKey('PayPeriod', on_delete=models.CASCADE)
+        basic_salary = models.DecimalField(max_digits=10, decimal_places=2)
+        overtime_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+        overtime_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+        deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+        gross_pay = models.DecimalField(max_digits=10, decimal_places=2)
+        net_pay = models.DecimalField(max_digits=10, decimal_places=2)
+
+        def calculate_gross_pay(self):
+            return self.basic_salary + (self.overtime_hours * self.overtime_rate)
+
+        def calculate_net_pay(self):
+            return self.gross_pay - self.deductions
+
+        def save(self, *args, **kwargs):
+            self.gross_pay = self.calculate_gross_pay()
+            self.net_pay = self.calculate_net_pay()
+            super().save(*args, **kwargs)
+
+        def __str__(self):
+            return f'{self.guard.user.full_name} - {self.pay_period}'
+
+    class Payroll(models.Model):
+        pay_period = models.ForeignKey('PayPeriod', on_delete=models.CASCADE)
+        created_at = models.DateTimeField(auto_now_add=True)
+        updated_at = models.DateTimeField(auto_now=True)
+
+        def __str__(self):
+            return f'Payroll for {self.pay_period}'

@@ -3,6 +3,8 @@ from django.db.models.signals import pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
+from operations.models import Operation
+from security_team.models import SecurityGuard
 from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator
 
 STATUS_CHOICE = (
@@ -100,10 +102,8 @@ class BookDate(models.Model):
 
 
 class BookedGuard(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booked_guards')
-    payment_method = models.CharField(max_length=200,  null=True, blank=True)
-    amount = models.CharField(max_length=200,  null=True, blank=True)
-
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booked_guard_booking')
+    guard = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booked_guards')
 
 
     active = models.BooleanField(default=True)
@@ -151,3 +151,38 @@ class Service(models.Model):
     service_name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+
+
+
+class Deployment(models.Model):
+    deployment_id = models.CharField(max_length=200, null=True, blank=True)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="booking_deployment")
+    supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="deployment_supervisor")
+    sub_supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="deployment_sub_supervisor")
+
+    deployed = models.BooleanField(default=False)
+
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+
+
+class DeploymentAttendance(models.Model):
+    deployment = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="deployments")
+    supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="dep_supervisors")
+    attendees = models.ForeignKey(SecurityGuard, on_delete=models.SET_NULL, null=True, blank=True, related_name="attendance")
+
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

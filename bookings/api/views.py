@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerializer, AllClientZonesSerializer, \
-    AllClientPostSitesSerializer
+    AllClientPostSitesSerializer, ClientZoneDetailsSerializer, ClientPostSiteDetailsSerializer
 from bookings.models import Booking, BookDate
 from clients.models import Client
 from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite
@@ -681,7 +681,8 @@ def delete_client_request(request):
     return Response(payload)
 
 
-
+########################################################
+########## Zone
 
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
@@ -748,6 +749,220 @@ def get_all_client_request_zones(request):
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
+def get_zone_details_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    zone_id = request.query_params.get('zone_id', None)
+
+    if not zone_id:
+        errors['zone_id'] = ["Zone id required"]
+
+    try:
+        zone = ClientZone.objects.get(zone_id=zone_id)
+    except:
+        errors['zone_id'] = ['Zone does not exist.']
+
+    if errors:
+        payload['message'] = "Errors"
+        payload['errors'] = errors
+        return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+    zone_serializer = ClientZoneDetailsSerializer(zone, many=False)
+    if zone_serializer:
+        zone = zone_serializer.data
+
+
+    payload['message'] = "Successful"
+    payload['data'] = zone
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def archive_zone(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        zone_id = request.data.get('zone_id', "")
+
+        if not zone_id:
+            errors['zone_id'] = ['Zone ID is required.']
+
+        try:
+            zone = ClientZone.objects.get(zone_id=zone_id)
+        except:
+            errors['zone_id'] = ['Zone does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        zone.is_archived = True
+        zone.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def unarchive_zone(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        zone_id = request.data.get('zone_id', "")
+
+        if not zone_id:
+            errors['zone_id'] = ['Zone ID is required.']
+
+        try:
+            zone = ClientZone.objects.get(zone_id=zone_id)
+        except:
+            errors['zone_id'] = ['Zone does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        zone.is_archived = False
+        zone.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def delete_zone(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        zone_id = request.data.get('zone_id', "")
+
+        if not zone_id:
+            errors['zone_id'] = ['Zone ID is required.']
+
+        try:
+            zone = ClientZone.objects.get(zone_id=zone_id)
+        except:
+            errors['zone_id'] = ['Zone does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        zone.delete()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_archived_zones(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    filter_zone = request.query_params.get('filter_zone', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+    all_zones = ClientZone.objects.all().filter(is_archived=True)
+
+
+    if search_query:
+        all_zones = all_zones.filter(
+            Q(zone_id__icontains=search_query) |
+            Q(client__user__user_id__icontains=search_query) |
+            Q(zone_name__icontains=search_query) |
+            Q(description__icontains=search_query)
+
+        )
+
+    if filter_zone:
+        all_zones = all_zones.filter(
+            Q(zone_id__icontains=filter_zone) |
+            Q(client__client_id__icontains=filter_zone)
+        )
+
+
+
+    paginator = Paginator(all_zones, page_size)
+
+    try:
+        paginated_zones = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_zones = paginator.page(1)
+    except EmptyPage:
+        paginated_zones = paginator.page(paginator.num_pages)
+
+    all_zones_serializer = AllClientZonesSerializer(paginated_zones, many=True)
+
+
+    data['bookings'] = all_zones_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_zones.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_zones.next_page_number() if paginated_zones.has_next() else None,
+        'previous': paginated_zones.previous_page_number() if paginated_zones.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+
+
+###########################################################################
+## Site
+
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
 def get_all_client_zone_sites(request):
     payload = {}
     data = {}
@@ -803,4 +1018,214 @@ def get_all_client_zone_sites(request):
     payload['data'] = data
 
     return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_site_details_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    site_id = request.query_params.get('site_id', None)
+
+    if not site_id:
+        errors['site_id'] = ["Site id required"]
+
+    try:
+        site = ClientPostSite.objects.get(site_id=site_id)
+    except:
+        errors['site_id'] = ['Site does not exist.']
+
+    if errors:
+        payload['message'] = "Errors"
+        payload['errors'] = errors
+        return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+    site_serializer = ClientPostSiteDetailsSerializer(site, many=False)
+    if site_serializer:
+        site = site_serializer.data
+
+
+    payload['message'] = "Successful"
+    payload['data'] = site
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def archive_site(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        site_id = request.data.get('site_id', "")
+
+        if not site_id:
+            errors['site_id'] = ['Site ID is required.']
+
+        try:
+            site = ClientPostSite.objects.get(site_id=site_id)
+        except:
+            errors['site_id'] = ['Site does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        site.is_archived = True
+        site.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def unarchive_site(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        site_id = request.data.get('site_id', "")
+
+        if not site_id:
+            errors['site_id'] = ['Site ID is required.']
+
+        try:
+            site = ClientPostSite.objects.get(site_id=site_id)
+        except:
+            errors['site_id'] = ['Site does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        site.is_archived = False
+        site.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_archived_sites(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    filter_site = request.query_params.get('filter_site', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+    all_sites = ClientPostSite.objects.all().filter(is_archived=True)
+
+
+    if search_query:
+        all_sites = all_sites.filter(
+            Q(zone_id__icontains=search_query) |
+            Q(client__user__user_id__icontains=search_query) |
+            Q(zone_name__icontains=search_query) |
+            Q(description__icontains=search_query)
+
+        )
+
+    if filter_site:
+        all_sites = all_sites.filter(
+            Q(site_id__icontains=filter_site) |
+            Q(client_zone__zone_id__icontains=filter_site) |
+            Q(client_zone__client__client_id__icontains=filter_site)
+        )
+
+
+
+    paginator = Paginator(all_sites, page_size)
+
+    try:
+        paginated_sites = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_sites = paginator.page(1)
+    except EmptyPage:
+        paginated_sites = paginator.page(paginator.num_pages)
+
+    all_sites_serializer = AllClientPostSitesSerializer(paginated_sites, many=True)
+
+
+    data['sites'] = all_sites_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_sites.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_sites.next_page_number() if paginated_sites.has_next() else None,
+        'previous': paginated_sites.previous_page_number() if paginated_sites.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def delete_site(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        site_id = request.data.get('site_id', "")
+
+        if not site_id:
+            errors['site_id'] = ['Site ID is required.']
+
+        try:
+            site = ClientPostSite.objects.get(site_id=site_id)
+        except:
+            errors['site_id'] = ['Site does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        site.delete()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
 
