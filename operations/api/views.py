@@ -1,11 +1,14 @@
 
 from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
+from bookings.models import Deployment, Booking
 from clients.api.serializers import ClientDetailsSerializer, AllClientComplaintsSerializer
 
 from clients.models import Client, ClientComplaint

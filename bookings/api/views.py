@@ -201,6 +201,7 @@ def add_client_request_basic_zone_sites_view(request):
             print(site)
             new_zone_site = ClientPostSite.objects.create(
                 client_zone=zone,
+                site_name=site["site_name"],
                 description=site["description"],
                 lat=site["lat"],
                 lng=site["lng"],

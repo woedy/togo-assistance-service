@@ -1,10 +1,13 @@
 from django.urls import path
 
+from bookings.api.assign_site_views import assign_guard, unassign_guard, re_assign_guard, get_all_assigned_guards
 from bookings.api.views import add_client_request_basic_info_view, add_client_request_basic_zone_view, \
     add_client_request_basic_zone_sites_view, add_client_request_date_times_view, get_all_client_requests, \
     get_client_request_details, edit_client_request, edit_client_request_zone, edit_client_request_zone_site, \
     edit_client_request_datetime, archive_client_request, delete_client_request, unarchive_client_request, \
-    get_all_client_request_zones, get_all_client_zone_sites
+    get_all_client_request_zones, get_all_client_zone_sites, get_zone_details_view, archive_zone, \
+    get_all_archived_zones, unarchive_zone, delete_zone, get_site_details_view, archive_site, get_all_archived_sites, \
+    unarchive_site, delete_site
 
 app_name = 'bookings'
 
@@ -26,7 +29,28 @@ urlpatterns = [
     path('unarchive-client-request/', unarchive_client_request, name="unarchive_client_request"),
     path('delete-client-request/', delete_client_request, name="delete_client_request"),
 
+    ##ZONE
     path('get-all-client-request-zones/', get_all_client_request_zones, name="get_all_client_request_zones"),
+    path('get-zone-details/', get_zone_details_view, name="get_zone_details_view"),
+    path('archive-zone/', archive_zone, name="archive_zone"),
+    path('unarchive-zone/', unarchive_zone, name="unarchive_zone"),
+    path('get-all-archived-zones/', get_all_archived_zones, name="get_all_archived_zones"),
+    path('delete-zone/', delete_zone, name="delete_zone"),
+
     path('get-all-client-zone-sites/', get_all_client_zone_sites, name="get_all_client_zone_sites"),
+    path('get-site-details/', get_site_details_view, name="get_site_details_view"),
+    path('archive-site/', archive_site, name="archive_site"),
+    path('unarchive-site/', unarchive_site, name="unarchive_site"),
+    path('get-all-archived-sites/', get_all_archived_sites, name="get_all_archived_sites"),
+    path('delete-site/', delete_site, name="delete_site"),
+
+
+
+
+
+    path('assign-guard/', assign_guard, name="assign_guard"),
+    path('unassign-guard/', unassign_guard, name="unassign_guard"),
+    path('re-assign-guard/', re_assign_guard, name="re_assign_guard"),
+    path('get-all-assigned-guards/', get_all_assigned_guards, name="get_all_assigned_guards"),
 
 ]

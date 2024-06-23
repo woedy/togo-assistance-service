@@ -4,8 +4,9 @@ from django.db.models.signals import pre_save
 from clients.models import Client
 from communications.models import PrivateChatRoom
 from operations.models import Operation
+from post_sites.models import ClientPostSite
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator
+from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator, unique_deployment_id_generator
 
 STATUS_CHOICE = (
 
@@ -103,7 +104,7 @@ class BookDate(models.Model):
 
 class BookedGuard(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booked_guard_booking')
-    guard = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booked_guards')
+    guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE, related_name='booked_guards')
 
 
     active = models.BooleanField(default=True)
@@ -160,9 +161,12 @@ class Deployment(models.Model):
     deployment_id = models.CharField(max_length=200, null=True, blank=True)
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="booking_deployment")
     supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="deployment_supervisor")
-    sub_supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="deployment_sub_supervisor")
-
+    #sub_supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="deployment_sub_supervisor")
+    guards = models.ManyToManyField(SecurityGuard, null=True, blank=True, related_name="deployed_guards")
+    site = models.ForeignKey(ClientPostSite, on_delete=models.SET_NULL, null=True, blank=True, related_name="deployed_site")
     deployed = models.BooleanField(default=False)
+    deployed_at = models.DateTimeField(null=True, blank=True)
+
 
 
     is_archived = models.BooleanField(default=False)
@@ -173,13 +177,23 @@ class Deployment(models.Model):
 
 
 
+def pre_save_deployment_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.deployment_id:
+        instance.deployment_id = unique_deployment_id_generator(instance)
+
+pre_save.connect(pre_save_deployment_id_receiver, sender=Deployment)
+
+
+
 
 
 
 class DeploymentAttendance(models.Model):
     deployment = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="deployments")
-    supervisor = models.ForeignKey(Operation, on_delete=models.SET_NULL, null=True, blank=True, related_name="dep_supervisors")
-    attendees = models.ForeignKey(SecurityGuard, on_delete=models.SET_NULL, null=True, blank=True, related_name="attendance")
+    clock_in = models.DateTimeField(null=True, blank=True)
+    clock_out = models.DateTimeField(null=True, blank=True)
+    guard = models.ForeignKey(SecurityGuard, on_delete=models.SET_NULL, null=True, blank=True, related_name="guard_attendances")
+    note = models.TextField(null=True, blank=True)
 
 
     is_archived = models.BooleanField(default=False)

@@ -6,8 +6,9 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 
+from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_guard_id_generator
+from tas_project.utils import unique_guard_id_generator, unique_payroll_id_generator
 
 User = get_user_model()
 
@@ -319,7 +320,7 @@ class TimeSlot(models.Model):
     time = models.TimeField(null=True, blank=True)
 
     occupied = models.BooleanField(default=False)
-    occupant = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL,
+    occupant = models.ForeignKey(Client, null=True, blank=True, on_delete=models.SET_NULL,
                                  related_name="booking_occupant")
 
     active = models.BooleanField(default=True)
@@ -333,44 +334,57 @@ class TimeSlot(models.Model):
 
 
 
-    ############################# PAYROLL #######################
+############################# PAYROLL #######################
 
-    class PayPeriod(models.Model):
-        start_date = models.DateField()
-        end_date = models.DateField()
-        is_closed = models.BooleanField(default=False)
+class PayPeriod(models.Model):
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    is_closed = models.BooleanField(default=False)
 
-        def __str__(self):
-            return f'{self.start_date} - {self.end_date}'
+    is_archived = models.BooleanField(default=False)
 
-    class PayrollEntry(models.Model):
-        guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE)
-        pay_period = models.ForeignKey('PayPeriod', on_delete=models.CASCADE)
-        basic_salary = models.DecimalField(max_digits=10, decimal_places=2)
-        overtime_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-        overtime_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-        deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-        gross_pay = models.DecimalField(max_digits=10, decimal_places=2)
-        net_pay = models.DecimalField(max_digits=10, decimal_places=2)
 
-        def calculate_gross_pay(self):
-            return self.basic_salary + (self.overtime_hours * self.overtime_rate)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-        def calculate_net_pay(self):
-            return self.gross_pay - self.deductions
 
-        def save(self, *args, **kwargs):
-            self.gross_pay = self.calculate_gross_pay()
-            self.net_pay = self.calculate_net_pay()
-            super().save(*args, **kwargs)
+    def __str__(self):
+        return f'{self.start_date} - {self.end_date}'
 
-        def __str__(self):
-            return f'{self.guard.user.full_name} - {self.pay_period}'
+class PayrollEntry(models.Model):
+    payroll_id = models.CharField(max_length=200, null=True, blank=True)
 
-    class Payroll(models.Model):
-        pay_period = models.ForeignKey('PayPeriod', on_delete=models.CASCADE)
-        created_at = models.DateTimeField(auto_now_add=True)
-        updated_at = models.DateTimeField(auto_now=True)
+    guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE)
+    pay_period = models.ForeignKey(PayPeriod, on_delete=models.CASCADE)
+    basic_salary = models.DecimalField(default=0.0, max_digits=10, decimal_places=2, null=True, blank=True)
+    overtime_hours = models.DecimalField(max_digits=5, decimal_places=2, default=0, null=True, blank=True)
+    overtime_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
+    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0, null=True, blank=True)
+    gross_pay = models.DecimalField(default=0.0, max_digits=10, decimal_places=2,null=True, blank=True )
+    net_pay = models.DecimalField(default=0.0, max_digits=10, decimal_places=2, null=True, blank=True)
 
-        def __str__(self):
-            return f'Payroll for {self.pay_period}'
+    is_archived = models.BooleanField(default=False)
+
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def calculate_gross_pay(self):
+        return self.basic_salary + (self.overtime_hours * self.overtime_rate)
+    def calculate_net_pay(self):
+        return self.gross_pay - self.deductions
+    def save(self, *args, **kwargs):
+        self.gross_pay = self.calculate_gross_pay()
+        self.net_pay = self.calculate_net_pay()
+        super().save(*args, **kwargs)
+    def __str__(self):
+        return f'{self.guard.user.full_name} - {self.pay_period}'
+
+
+def pre_save_payroll_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.payroll_id:
+        instance.payroll_id = unique_payroll_id_generator(instance)
+
+pre_save.connect(pre_save_payroll_id_receiver, sender=PayrollEntry)

@@ -346,6 +346,24 @@ def unique_booking_id_generator(instance):
 
 
 
+def unique_payment_id_generator(instance):
+    """
+    This is for a payment_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    payment_id = "PAY-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NT)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(payment_id=payment_id).exists()
+    if qs_exists:
+        return None
+    return payment_id
+
+
+
+
 def unique_log_id_generator(instance):
     """
     This is for a log_id field
@@ -379,6 +397,22 @@ def unique_category_id_generator(instance):
     if qs_exists:
         return None
     return category_id
+
+
+def unique_payroll_id_generator(instance):
+    """
+    This is for a payroll_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    payroll_id = "PAYROLL-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(PR)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(payroll_id=payroll_id).exists()
+    if qs_exists:
+        return None
+    return payroll_id
 
 
 
@@ -481,3 +515,18 @@ def unique_maintenance_id_generator(instance):
     if qs_exists:
         return None
     return maintenance_id
+
+def unique_deployment_id_generator(instance):
+    """
+    This is for a deployment_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    deployment_id = "DEP-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(LOY)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(deployment_id=deployment_id).exists()
+    if qs_exists:
+        return None
+    return deployment_id

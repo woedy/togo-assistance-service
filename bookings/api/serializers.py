@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from bookings.models import Booking
+from bookings.models import Booking, BookedGuard
 from clients.models import Client, ClientComplaint
 from post_sites.models import ClientZone, ClientPostSite
+from security_team.api.serializers import SecurityGuardDetailsSerializer
 
 User = get_user_model()
 
@@ -82,5 +83,23 @@ class AllClientPostSitesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClientPostSite
+        fields = "__all__"
+
+
+
+class BookedGuardDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BookedGuard
+        fields = "__all__"
+
+
+
+
+class AllBookedGuardsSerializer(serializers.ModelSerializer):
+    guard = SecurityGuardDetailsSerializer(many=False)
+
+    class Meta:
+        model = BookedGuard
         fields = "__all__"
 

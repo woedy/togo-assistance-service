@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from clients.api.serializers import ClientDetailsSerializer, ClientComplaintSerializer
+from clients.api.serializers import ClientDetailsSerializer
 
 from clients.models import Client, ClientComplaint
 from reports.api.serializers import ReportSerializer
@@ -52,12 +52,6 @@ def get_billing_dashboard(request):
         clients = clients_serializer.data
         recent_clients = clients
 
-    _client_complaints = ClientComplaint.objects.all().order_by("-created_at")
-
-    client_complaints_serializer = ClientComplaintSerializer(_client_complaints, many=True)
-    if client_complaints_serializer:
-        _client_complaints = client_complaints_serializer.data
-        recent_complaints = _client_complaints
 
 
     reports = Report.objects.all().order_by("-created_at")
