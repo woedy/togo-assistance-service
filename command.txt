@@ -11,9 +11,9 @@ docker-compose up
 
 docker exec -it tas_django_app sh
 
-sudo chattr -i mysite
+sudo chattr -i TasRemote
 
-sudo rm -r mysite
+sudo rm -r TasRemote
 
 
 sudo chattr -i TasRemote
