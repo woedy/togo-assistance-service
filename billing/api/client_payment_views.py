@@ -69,7 +69,7 @@ def add_client_payment(request):
         )
 
 
-        data["paymeny_id"] = new_payment.paymeny_id
+        data["payment_id"] = new_payment.payment_id
 
 
         payload['message'] = "Successful"
@@ -209,13 +209,6 @@ def edit_client_payment(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
 
-        new_payment = ClientPayment.objects.create(
-            booking=booking,
-            payment_method=payment_method,
-            payment_type=payment_type,
-            amount=amount,
-
-        )
 
         payment.booking = booking
         payment.payment_method = payment_method
@@ -224,7 +217,7 @@ def edit_client_payment(request):
         payment.save()
 
 
-        data["paymeny_id"] = new_payment.paymeny_id
+        data["payment_id"] = payment.payment_id
 
 
         payload['message'] = "Successful"

@@ -35,6 +35,17 @@ def add_pay_period(request):
             errors['end_date'] = ['End date is required.']
 
 
+        try:
+            payment_period = PayPeriod.objects.get(
+                start_date=start_date,
+                end_date=end_date
+            )
+            errors['id'] = ['Pay period already exist.']
+        except:
+            pass
+
+
+
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
@@ -46,6 +57,8 @@ def add_pay_period(request):
             end_date=end_date
 
         )
+
+        data['id'] = new_payment_period.id
 
 
         payload['message'] = "Successful"

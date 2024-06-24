@@ -6,7 +6,8 @@ from communications.models import PrivateChatRoom
 from operations.models import Operation
 from post_sites.models import ClientPostSite
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator, unique_deployment_id_generator
+from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator, unique_deployment_id_generator, \
+    unique_attendance_id_generator
 
 STATUS_CHOICE = (
 
@@ -189,14 +190,27 @@ pre_save.connect(pre_save_deployment_id_receiver, sender=Deployment)
 
 
 class DeploymentAttendance(models.Model):
-    deployment = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="deployments")
+    attendance_id = models.CharField(max_length=200, null=True, blank=True)
+
+    deployment = models.ForeignKey(Deployment, on_delete=models.CASCADE, related_name="deployments")
     clock_in = models.DateTimeField(null=True, blank=True)
     clock_out = models.DateTimeField(null=True, blank=True)
     guard = models.ForeignKey(SecurityGuard, on_delete=models.SET_NULL, null=True, blank=True, related_name="guard_attendances")
-    note = models.TextField(null=True, blank=True)
+    clock_in_note = models.TextField(null=True, blank=True)
+    clock_out_note = models.TextField(null=True, blank=True)
 
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+def pre_save_attendance_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.attendance_id:
+        instance.attendance_id = unique_attendance_id_generator(instance)
+
+pre_save.connect(pre_save_attendance_id_receiver, sender=DeploymentAttendance)
+
+

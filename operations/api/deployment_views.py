@@ -25,7 +25,7 @@ def assign_supervisor(request):
         booking_id = request.data.get('booking_id', "")
         supervisor_id = request.data.get('supervisor_id', "")
         site_id = request.data.get('site_id', "")
-        guards = request.data.get('site_id', [])
+        guards = request.data.get('guards', [])
 
 
         if not booking_id:
@@ -78,7 +78,10 @@ def assign_supervisor(request):
         )
 
         for guard in guards:
-            _guard = SecurityGuard.object.get(guard_id=guard)
+            print("##########################")
+            print(guard)
+
+            _guard = SecurityGuard.objects.get(guard_id=guard)
             new_deployment.guards.add(_guard)
             new_deployment.save()
 

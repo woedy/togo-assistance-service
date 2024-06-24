@@ -28,10 +28,10 @@ def add_payroll_entry(request):
     if request.method == 'POST':
         guard_id = request.data.get('guard_id', "")
         pay_period_id = request.data.get('pay_period_id', "")
-        basic_salary = request.data.get('basic_salary', "")
-        overtime_hours = request.data.get('overtime_hours', "")
-        overtime_rate = request.data.get('overtime_rate', "")
-        deductions = request.data.get('deductions', "")
+        basic_salary = request.data.get('basic_salary', 0)
+        overtime_hours = request.data.get('overtime_hours', 0)
+        overtime_rate = request.data.get('overtime_rate', 0)
+        deductions = request.data.get('deductions', 0)
 
 
 
@@ -50,10 +50,17 @@ def add_payroll_entry(request):
         except:
             errors['guard_id'] = ['Guard does not exist.']
 
+
         try:
             pay_period = PayPeriod.objects.get(id=pay_period_id)
         except:
             errors['pay_period_id'] = ['Pay Period does not exist.']
+
+        try:
+            payroll = PayrollEntry.objects.get(guard=guard, pay_period=pay_period)
+            errors['payroll_id'] = ['Payroll already exist.']
+        except:
+            pass
 
         if errors:
             payload['message'] = "Errors"
@@ -70,6 +77,7 @@ def add_payroll_entry(request):
             deductions=deductions,
 
         )
+        data['payroll_id'] = new_pay_period.payroll_id
 
 
         payload['message'] = "Successful"
@@ -259,7 +267,7 @@ def archive_payroll_entry(request):
             errors['payroll_id'] = ['ID is required.']
 
         try:
-            payroll_entry = PayPeriod.objects.get(payroll_id=payroll_id)
+            payroll_entry = PayrollEntry.objects.get(payroll_id=payroll_id)
         except:
             errors['payroll_id'] = ['Payroll Entry does not exist.']
 
@@ -295,7 +303,7 @@ def delete_payroll_entry(request):
             errors['payroll_id'] = ['ID is required.']
 
         try:
-            payroll_entry = PayPeriod.objects.get(payroll_id=payroll_id)
+            payroll_entry = PayrollEntry.objects.get(payroll_id=payroll_id)
         except:
             errors['payroll_id'] = ['Payroll Entry does not exist.']
 
@@ -329,7 +337,7 @@ def unarchive_payroll_entry(request):
             errors['payroll_id'] = ['ID is required.']
 
         try:
-            payroll_entry = PayPeriod.objects.get(payroll_id=payroll_id)
+            payroll_entry = PayrollEntry.objects.get(payroll_id=payroll_id)
         except:
             errors['payroll_id'] = ['Payroll Entry does not exist.']
 

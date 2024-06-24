@@ -380,7 +380,7 @@ class PayrollEntry(models.Model):
         self.net_pay = self.calculate_net_pay()
         super().save(*args, **kwargs)
     def __str__(self):
-        return f'{self.guard.user.full_name} - {self.pay_period}'
+        return f'{self.guard.user.first_name} - {self.pay_period}'
 
 
 def pre_save_payroll_id_receiver(sender, instance, *args, **kwargs):

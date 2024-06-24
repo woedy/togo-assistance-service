@@ -1,4 +1,4 @@
-from datetime import timezone
+from datetime import datetime
 
 from django.core.paginator import PageNotAnInteger, Paginator, EmptyPage
 from django.db.models import Q
@@ -58,9 +58,11 @@ def clock_in_guard(request):
         new_clock_in = DeploymentAttendance.objects.create(
             deployment=deployment,
             guard=guard,
-            note=note,
-            clock_in=timezone.now(),
+            clock_in_note=note,
+            clock_in=datetime.now(),
         )
+
+        data['attendance_id'] = new_clock_in.attendance_id
 
 
         payload['message'] = "Successful"
@@ -80,29 +82,18 @@ def clock_out_guard(request):
     errors = {}
 
     if request.method == 'POST':
-        deployment_id = request.data.get('deployment_id', "")
-        guard_id = request.data.get('guard_id', "")
+        attendance_id = request.data.get('attendance_id', "")
         note = request.data.get('note', "")
 
 
-        if not deployment_id:
-            errors['deployment_id'] = ['Deployment ID is required.']
-
-        if not guard_id:
-            errors['guard_id'] = ['Guard ID is required.']
-
+        if not attendance_id:
+            errors['attendance_id'] = ['Attendance ID is required.']
 
 
         try:
-            deployment = Deployment.objects.get(deployment_id=deployment_id)
+            attendance = DeploymentAttendance.objects.get(attendance_id=attendance_id)
         except:
-            errors['deployment_id'] = ['Deployment does not exist.']
-
-
-        try:
-            guard = SecurityGuard.objects.get(guard_id=guard_id)
-        except:
-            errors['guard_id'] = ['Guard does not exist.']
+            errors['attendance'] = ['Attendance does not exist.']
 
 
         if errors:
@@ -111,13 +102,9 @@ def clock_out_guard(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
 
-        new_clock_out = DeploymentAttendance.objects.create(
-            deployment=deployment,
-            guard=guard,
-            note=note,
-            clock_out=timezone.now(),
-        )
-
+        attendance.clock_out = datetime.now()
+        attendance.clock_out_note = note
+        attendance.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -202,7 +189,7 @@ def get_attendance_details_view(request):
         errors['attendance_id'] = ["Attendance id required"]
 
     try:
-        attendance = DeploymentAttendance.objects.get(id=attendance_id)
+        attendance = DeploymentAttendance.objects.get(attendance_id=attendance_id)
     except:
         errors['attendance_id'] = ['Attendance does not exist.']
 
@@ -241,7 +228,7 @@ def archive_attendance(request):
             errors['attendance_id'] = ['Attendance ID is required.']
 
         try:
-            attendance = DeploymentAttendance.objects.get(id=attendance_id)
+            attendance = DeploymentAttendance.objects.get(attendance_id=attendance_id)
         except:
             errors['attendance_id'] = ['Attendance does not exist.']
 
@@ -278,7 +265,7 @@ def unarchive_attendance(request):
             errors['attendance_id'] = ['Attendance ID is required.']
 
         try:
-            attendance = DeploymentAttendance.objects.get(id=attendance_id)
+            attendance = DeploymentAttendance.objects.get(attendance_id=attendance_id)
         except:
             errors['attendance_id'] = ['Attendance does not exist.']
 
@@ -313,7 +300,7 @@ def delete_attendance(request):
             errors['attendance_id'] = ['Attendance ID is required.']
 
         try:
-            attendance = DeploymentAttendance.objects.get(id=attendance_id)
+            attendance = DeploymentAttendance.objects.get(attendance_id=attendance_id)
         except:
             errors['attendance_id'] = ['Attendance does not exist.']
 

@@ -3,7 +3,8 @@ from django.contrib import admin
 from security_team.models import SecurityGuard, SecurityGuardID, SecurityGuardIDImage, SecurityGuardContact, \
     SecurityGuardDeviceInfo, SecurityGuardActivity, SecurityGuardFile, SecurityGuardNote, SecurityGuardSkill, \
     SecurityGuardAccess, SecurityGuardSetting, SecurityGuardSettingGeneral, SecurityGuardSettingTimeClock, \
-    SecurityGuardSettingScheduler, SecurityGuardTask, SecurityGuardSettingNotification, GuardAvailability, TimeSlot
+    SecurityGuardSettingScheduler, SecurityGuardTask, SecurityGuardSettingNotification, GuardAvailability, TimeSlot, \
+    PayPeriod, PayrollEntry
 
 admin.site.register(SecurityGuard)
 admin.site.register(SecurityGuardID)
@@ -23,3 +24,5 @@ admin.site.register(SecurityGuardSettingNotification)
 admin.site.register(SecurityGuardTask)
 admin.site.register(GuardAvailability)
 admin.site.register(TimeSlot)
+admin.site.register(PayPeriod)
+admin.site.register(PayrollEntry)
