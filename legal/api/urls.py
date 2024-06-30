@@ -1,5 +1,8 @@
 from django.urls import path
 
+from legal.api.views import add_client_request_contract_view, get_all_client_contracts, archive_contract, \
+    unarchive_contract, delete_contract
+
 app_name = 'legal'
 
 urlpatterns = [

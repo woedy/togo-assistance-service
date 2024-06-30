@@ -24,16 +24,9 @@ STATUS_CHOICE = (
 )
 
 
-DEPARTMENT = (
-    ('SECRETARY', 'SECRETARY'),
-    ('HUMAN RESOURCES', 'HUMAN RESOURCES'),
-    ('ADMIN', 'ADMIN'),
-('LOGISTICS', 'LOGISTICS'),
-('BILLING', 'BILLING'),
-('OPERATIONS', 'OPERATIONS'),
-('COMMERCIAL', 'COMMERCIAL'),
-('CLIENT', 'CLIENT'),
-('LEGAL', 'LEGAL'),
+DURATION = (
+    ('Temporal', 'Temporal'),
+    ('Permanent', 'Permanent')
 
 )
 
@@ -64,7 +57,7 @@ class Booking(models.Model):
     review = models.TextField(null=True, blank=True)
     equipment_requirements = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=255, default="Pending", null=True, blank=True, choices=STATUS_CHOICE)
-    department = models.CharField(max_length=255, default="COMMERCIAL", null=True, blank=True, choices=DEPARTMENT)
+    contact_duration = models.CharField(max_length=255, default="Temporal", null=True, blank=True, choices=DURATION)
 
     guard_type = models.CharField(max_length=255, default="Armed Guard", null=True, blank=True, choices=GUARD_TYPE)
 
@@ -88,6 +81,30 @@ def pre_save_booking_id_receiver(sender, instance, *args, **kwargs):
 pre_save.connect(pre_save_booking_id_receiver, sender=Booking)
 
 
+DEPARTMENT = (
+    ('SECRETARY', 'SECRETARY'),
+    ('HUMAN RESOURCES', 'HUMAN RESOURCES'),
+    ('ADMIN', 'ADMIN'),
+('LOGISTICS', 'LOGISTICS'),
+('BILLING', 'BILLING'),
+('OPERATIONS', 'OPERATIONS'),
+('COMMERCIAL', 'COMMERCIAL'),
+('CLIENT', 'CLIENT'),
+('GUARD', 'GUARD'),
+('LEGAL', 'LEGAL'),
+
+)
+
+
+
+class ForwardingList(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='forwarding_list')
+
+    department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class BookDate(models.Model):
@@ -212,5 +229,22 @@ def pre_save_attendance_id_receiver(sender, instance, *args, **kwargs):
         instance.attendance_id = unique_attendance_id_generator(instance)
 
 pre_save.connect(pre_save_attendance_id_receiver, sender=DeploymentAttendance)
+
+
+
+
+
+class FieldReport(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='field_reports')
+
+    title = models.CharField(max_length=1000, null=True, blank=True)
+    report = models.TextField(null=True, blank=True)
+    is_archived = models.BooleanField(default=False)
+
+
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerializer, AllClientZonesSerializer, \
     AllClientPostSitesSerializer, ClientZoneDetailsSerializer, ClientPostSiteDetailsSerializer
-from bookings.models import Booking, BookDate
+from bookings.models import Booking, BookDate, ForwardingList
 from clients.models import Client
 from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite
 
@@ -97,6 +97,57 @@ def add_client_request_basic_info_view(request):
         )
 
         data['booking_id'] = new_client_request.booking_id
+
+        # Create Initial Forwarding Department
+        forwarding = ForwardingList.objects.create(
+            booking=new_client_request,
+            department='COMMERCIAL'
+        )
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def forward_to_department(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        booking_id = request.data.get('booking_id', "")
+        department = request.data.get('department', "")
+
+
+        if not booking_id:
+            errors['booking_id'] = ['Booking ID is required.']
+
+        if not department:
+            errors['department'] = ['Department is required.']
+
+        try:
+            booking = Booking.objects.get(booking_id=booking_id)
+        except:
+            errors['booking_id'] = ['Booking does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            forwarding = ForwardingList.objects.get(booking=booking, department=department)
+            pass
+        except:
+            new_forwarding = ForwardingList.objects.create(
+                booking=booking,
+                department=department
+                )
 
         payload['message'] = "Successful"
         payload['data'] = data
