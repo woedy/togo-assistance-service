@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from bookings.models import Estimate
 from commercial.models import Commercial
-from legal.models import Legal
+from legal.models import Legal, Contract
 from operations.models import Operation
 
 User = get_user_model()

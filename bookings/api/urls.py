@@ -60,7 +60,7 @@ urlpatterns = [
     path('get-all-assigned-guards/', get_all_assigned_guards, name="get_all_assigned_guards"),
 
 
-
+    ##### Field Report
 
     path('add-field_report/', add_field_report, name="add_field_report"),
     path('edit-field-report/', edit_field_report, name="edit_field_report"),
@@ -69,6 +69,6 @@ urlpatterns = [
     path('archive-field-report/', archive_field_report, name="archive_field_report"),
     path('delete-field-report/', delete_field_report, name="delete_field_report"),
     path('unarchive-field-report/', unarchive_field_report, name="unarchive_field_report"),
-    path('get-all-archived-field-report/', get_all_archived_field_reports_view, name="get_all_archived_field_reports_view"),
+    path('get-all-archived-field-reports/', get_all_archived_field_reports_view, name="get_all_archived_field_reports_view"),
 
 ]

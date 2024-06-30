@@ -38,20 +38,23 @@ def add_field_report(request):
         except:
             errors['booking_id'] = ['Booking does not exist.']
 
+        try:
+            report = FieldReport.objects.get(booking=booking)
+            errors['booking_id'] = ['Field Report already exist. Update it']
+        except:
 
+            _report = FieldReport.objects.create(
+                booking=booking,
+                title=title,
+                report=report,
+
+            )
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-
-        report = FieldReport.objects.create(
-            booking=booking,
-            title=title,
-            report=report,
-
-        )
 
 
         payload['message'] = "Successful"
@@ -201,7 +204,7 @@ def edit_field_report(request):
 
         field_report.title = title
         field_report.report = report
-        field_report.user.save()
+        field_report.save()
 
         payload['message'] = "Successful"
         payload['data'] = data

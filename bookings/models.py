@@ -239,10 +239,11 @@ class FieldReport(models.Model):
 
     title = models.CharField(max_length=1000, null=True, blank=True)
     report = models.TextField(null=True, blank=True)
+
     is_archived = models.BooleanField(default=False)
 
 
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

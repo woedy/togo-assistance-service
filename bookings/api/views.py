@@ -10,6 +10,7 @@ from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerial
     AllClientPostSitesSerializer, ClientZoneDetailsSerializer, ClientPostSiteDetailsSerializer
 from bookings.models import Booking, BookDate, ForwardingList
 from clients.models import Client
+from notifications.models import Notification
 from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite
 
 
@@ -70,6 +71,7 @@ def add_client_request_basic_info_view(request):
         guard_type = request.data.get('guard_type', "")
         equipment_requirements = request.data.get('equipment_requirements', "")
         special_instruction = request.data.get('special_instruction', "")
+        contact_duration = request.data.get('contact_duration', "")
 
 
         if not client_id:
@@ -77,6 +79,8 @@ def add_client_request_basic_info_view(request):
 
         if not guard_type:
             errors['guard_type'] = ['Guard type is required.']
+        if not contact_duration:
+            errors['contact_duration'] = ['Contact duration is required.']
 
         try:
             client = Client.objects.get(client_id=client_id)
@@ -94,6 +98,7 @@ def add_client_request_basic_info_view(request):
             guard_type=guard_type,
             equipment_requirements=equipment_requirements,
             special_instruction=special_instruction,
+            contact_duration=contact_duration,
         )
 
         data['booking_id'] = new_client_request.booking_id
@@ -148,6 +153,13 @@ def forward_to_department(request):
                 booking=booking,
                 department=department
                 )
+
+            notification = Notification.objects.create(
+                title='Forwarded Client Request',
+                subject="A new client request has been forwarded to you department. Check and give it the necessary attention.",
+                department=department
+            )
+
 
         payload['message'] = "Successful"
         payload['data'] = data

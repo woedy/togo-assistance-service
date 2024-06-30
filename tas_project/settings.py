@@ -32,11 +32,12 @@ ALLOWED_HOSTS = ["*"]
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'etornamasamoah@gmail.com'
-EMAIL_HOST_PASSWORD = 'ljpeckatqmkkmfnz'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST_PASSWORD = 'caiesdzxsarbcray'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = 'Togo Assistance Service <togoassistanceservice@gmail.com>'
 BASE_URL = '0.0.0.0:80'
+
 
 
 # Application definition
@@ -73,7 +74,8 @@ INSTALLED_APPS = [
     "security_team",
     "post_sites",
     "legal",
-    "logistics"
+    "logistics",
+    "notifications"
 ]
 
 AUTH_USER_MODEL = 'accounts.User'

@@ -14,7 +14,7 @@ User = get_user_model()
 class ForwardingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ForwardingList
-        fields = "__all__"
+        fields = ["department"]
 
 
 class ClientUserDetailSerializer(serializers.ModelSerializer):
@@ -50,11 +50,14 @@ class BookingDetailsSerializer(serializers.ModelSerializer):
 
 class AllBookingsSerializer(serializers.ModelSerializer):
     client = AllClientsSerializer(many=False)
-    forwarding_list = ForwardingListSerializer(many=True)
+    forwarding_list = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         fields = "__all__"
+
+    def get_forwarding_list(self, obj):
+        return [fl.department for fl in obj.forwarding_list.all()]
 
 
 

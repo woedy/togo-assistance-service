@@ -21,6 +21,8 @@ urlpatterns = [
     path('api/security-team/', include('security_team.api.urls', 'security_team_api')),
     path('api/operations/', include('operations.api.urls', 'operations_api')),
     path('api/billing/', include('billing.api.urls', 'billing_api')),
+    path('api/legal/', include('legal.api.urls', 'legal_api')),
+    path('api/notifications/', include('notifications.api.urls', 'notifications_api')),
 
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
