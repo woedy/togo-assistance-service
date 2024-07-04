@@ -8,10 +8,9 @@ from rest_framework.response import Response
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from clients.api.serializers import ClientDetailsSerializer
 
-from clients.models import Client, ClientComplaint
+from clients.models import Client
 from reports.api.serializers import ReportSerializer
 from reports.models import Report
-from secretary.models import Secretary
 
 User = get_user_model()
 

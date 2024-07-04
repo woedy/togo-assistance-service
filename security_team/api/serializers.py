@@ -24,6 +24,17 @@ class SecurityGuardDetailsSerializer(serializers.ModelSerializer):
 
 
 
+class AllSecurityGuardsSerializer(serializers.ModelSerializer):
+    user = SecurityGuardUserDetailSerializer(many=False)
+    class Meta:
+        model = SecurityGuard
+        fields = "__all__"
+
+
+
+
+
+
 
 class OccupantSerializer(serializers.ModelSerializer):
     class Meta:
