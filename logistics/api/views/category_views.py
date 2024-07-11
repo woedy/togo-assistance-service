@@ -82,7 +82,7 @@ def get_all_category_view(request):
         all_categories = all_categories.filter(
             Q(category_id__icontains=search_query) |
             Q(name__icontains=search_query) |
-            Q(description_number__icontains=search_query)
+            Q(description__icontains=search_query)
         )
 
 

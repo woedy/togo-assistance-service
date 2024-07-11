@@ -88,8 +88,8 @@ def get_all_supplier_view(request):
             Q(supplier_id__icontains=search_query) |
             Q(name__icontains=search_query) |
             Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
+            Q(email__icontains=search_query) |
+            Q(address__icontains=search_query)
         )
 
 
@@ -331,8 +331,8 @@ def get_all_archived_suppliers_view(request):
             Q(supplier_id__icontains=search_query) |
             Q(name__icontains=search_query) |
             Q(phone_number__icontains=search_query) |
-            Q(email_number__icontains=search_query) |
-            Q(address_number__icontains=search_query)
+            Q(email__icontains=search_query) |
+            Q(address__icontains=search_query)
         )
 
 
