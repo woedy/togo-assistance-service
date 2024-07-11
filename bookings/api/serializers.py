@@ -124,6 +124,7 @@ class AllBookedGuardsSerializer(serializers.ModelSerializer):
 
 
 class FieldReportDetailsSerializer(serializers.ModelSerializer):
+    booking = AllBookingsSerializer(many=False)
 
     class Meta:
         model = FieldReport
@@ -133,6 +134,7 @@ class FieldReportDetailsSerializer(serializers.ModelSerializer):
 
 
 class AllFieldReportsSerializer(serializers.ModelSerializer):
+    booking = AllBookingsSerializer(many=False)
 
     class Meta:
         model = FieldReport

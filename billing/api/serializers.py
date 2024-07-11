@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from billing.models import Billing, ClientPayment
+from bookings.api.serializers import AllBookingsSerializer
 from human_resources.models import HumanResource
 from security_team.models import PayPeriod, PayrollEntry
 
@@ -24,6 +25,7 @@ class BillingDetailsSerializer(serializers.ModelSerializer):
 
 
 class ClientPaymentDetailsSerializer(serializers.ModelSerializer):
+    booking = AllBookingsSerializer(many=False)
 
     class Meta:
         model = ClientPayment
@@ -31,6 +33,7 @@ class ClientPaymentDetailsSerializer(serializers.ModelSerializer):
 
 
 class AllClientPaymentsSerializer(serializers.ModelSerializer):
+    booking = AllBookingsSerializer(many=False)
     class Meta:
         model = ClientPayment
         fields = "__all__"

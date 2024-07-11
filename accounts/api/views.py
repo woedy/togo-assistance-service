@@ -823,7 +823,6 @@ def check_password(email, password):
     except User.DoesNotExist:
         return False
 
-
 class PasswordResetView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
 
@@ -852,6 +851,7 @@ class PasswordResetView(generics.GenericAPIView):
                 payload['errors'] = errors
                 return Response(payload, status=status.HTTP_404_NOT_FOUND)
 
+
         user = User.objects.filter(email=email).first()
         otp_code = generate_random_otp_code()
         user.otp_code = otp_code
@@ -860,12 +860,11 @@ class PasswordResetView(generics.GenericAPIView):
         context = {
             'otp_code': otp_code,
             'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name
+            'full_name': user.full_name
         }
 
-        txt_ = get_template("registration/emails/send_estimate.txt").render(context)
-        html_ = get_template("registration/emails/send_estimate.html").render(context)
+        txt_ = get_template("registration/emails/send_otp.txt").render(context)
+        html_ = get_template("registration/emails/send_otp.html").render(context)
 
         subject = 'OTP CODE'
         from_email = settings.DEFAULT_FROM_EMAIL
@@ -887,7 +886,7 @@ class PasswordResetView(generics.GenericAPIView):
             fail_silently=False,
         )
 
-        #data["otp_code"] = otp_code
+        data["otp_code"] = otp_code
         data["email"] = user.email
         data["user_id"] = user.user_id
 
@@ -989,8 +988,8 @@ def resend_password_otp(request):
         'last_name': user.last_name
     }
 
-    txt_ = get_template("registration/emails/send_estimate.txt").render(context)
-    html_ = get_template("registration/emails/send_estimate.html").render(context)
+    txt_ = get_template("registration/emails/send_otp.txt").render(context)
+    html_ = get_template("registration/emails/send_otp.html").render(context)
 
     subject = 'OTP CODE'
     from_email = settings.DEFAULT_FROM_EMAIL

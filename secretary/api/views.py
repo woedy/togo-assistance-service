@@ -190,8 +190,8 @@ def edit_log_view(request):
         if not _status:
             errors['status'] = ['Status is required.']
 
-        if not client_id:
-            errors['client_id'] = ['Client ID is required.']
+        #if not client_id:
+        #    errors['client_id'] = ['Client ID is required.']
 
         if not purpose:
             errors['purpose'] = ['Purpose is required.']
