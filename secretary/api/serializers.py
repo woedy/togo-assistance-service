@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from clients.models import Client
 from secretary.models import Secretary, LogBook
+from security_team.models import FileManagement
 
 User = get_user_model()
 
@@ -41,3 +42,10 @@ class AllLogBookSerializer(serializers.ModelSerializer):
 
 
 
+
+
+class AllFilesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FileManagement
+        fields = "__all__"

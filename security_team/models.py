@@ -8,7 +8,7 @@ from django.db.models.signals import post_save, pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_guard_id_generator, unique_payroll_id_generator
+from tas_project.utils import unique_guard_id_generator, unique_payroll_id_generator, unique_file_id_generator
 
 User = get_user_model()
 
@@ -388,3 +388,37 @@ def pre_save_payroll_id_receiver(sender, instance, *args, **kwargs):
         instance.payroll_id = unique_payroll_id_generator(instance)
 
 pre_save.connect(pre_save_payroll_id_receiver, sender=PayrollEntry)
+
+
+
+
+def upload_file_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "file_management/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+
+
+class FileManagement(models.Model):
+    file_id = models.CharField(max_length=200, null=True, blank=True)
+
+    file_name = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    file = models.FileField(upload_to=upload_file_path, null=True, blank=True)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+def pre_save_file_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.file_id:
+        instance.file_id = unique_file_id_generator(instance)
+
+pre_save.connect(pre_save_file_id_receiver, sender=FileManagement)

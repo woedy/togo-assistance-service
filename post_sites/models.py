@@ -12,7 +12,7 @@ from tas_project.utils import unique_site_id_generator, unique_zone_id_generator
 class ClientZone(models.Model):
     zone_id = models.CharField(max_length=200, null=True, blank=True)
 
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_zones')
+    #client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_zones')
     zone_name = models.CharField(max_length=5000, blank=True, null=True)
 
     description = models.TextField(null=True, blank=True)
@@ -66,6 +66,8 @@ class ClientPostSite(models.Model):
 
     client_zone = models.ForeignKey(ClientZone, on_delete=models.CASCADE, related_name='zone_post_sites')
     site_name = models.CharField(max_length=5000, blank=True, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='client_sites')
+
 
 
     no_of_guards = models.IntegerField(default=0)

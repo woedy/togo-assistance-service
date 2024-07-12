@@ -177,22 +177,22 @@ def add_client_request_basic_zone_view(request):
     errors = {}
 
     if request.method == 'POST':
-        client_id = request.data.get('client_id', "")
+        #client_id = request.data.get('client_id', "")
         zone_name = request.data.get('zone_name', "")
         description = request.data.get('description', "")
         coordinates = request.data.get('coordinates', "")
 
 
-        if not client_id:
-            errors['client_id'] = ['Client ID is required.']
+        #if not client_id:
+        #    errors['client_id'] = ['Client ID is required.']
 
         if not zone_name:
             errors['zone_name'] = ['Zone name is required.']
 
-        try:
-            client = Client.objects.get(client_id=client_id)
-        except:
-            errors['client_id'] = ['Client does not exist.']
+        #try:
+        #    client = Client.objects.get(client_id=client_id)
+        #except:
+        #    errors['client_id'] = ['Client does not exist.']
 
         if errors:
             payload['message'] = "Errors"
@@ -201,7 +201,6 @@ def add_client_request_basic_zone_view(request):
 
 
         new_client_zone = ClientZone.objects.create(
-            client=client,
             zone_name=zone_name,
             description=description,
         )
@@ -235,12 +234,16 @@ def add_client_request_basic_zone_sites_view(request):
 
     if request.method == 'POST':
         zone_id = request.data.get('zone_id', "")
+        client_id = request.data.get('client_id', "")
 
         sites = request.data.get('sites', "")
 
 
         if not zone_id:
             errors['zone_id'] = ['Zone ID is required.']
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
 
         if not sites:
             errors['sites'] = ['At least one site is required.']
@@ -250,6 +253,11 @@ def add_client_request_basic_zone_sites_view(request):
             zone = ClientZone.objects.get(zone_id=zone_id)
         except:
             errors['zone'] = ['Zone does not exist.']
+
+        try:
+           client = Client.objects.get(client_id=client_id)
+        except:
+           errors['client_id'] = ['Client does not exist.']
 
 
         if errors:
@@ -264,6 +272,7 @@ def add_client_request_basic_zone_sites_view(request):
             print(site)
             new_zone_site = ClientPostSite.objects.create(
                 client_zone=zone,
+                client=client,
                 site_name=site["site_name"],
                 description=site["description"],
                 lat=site["lat"],
@@ -475,7 +484,7 @@ def edit_client_request_zone(request):
 
     if request.method == 'POST':
         zone_id = request.data.get('zone_id', "")
-        client_id = request.data.get('client_id', "")
+        #client_id = request.data.get('client_id', "")
         zone_name = request.data.get('zone_name', "")
         description = request.data.get('description', "")
         coordinates = request.data.get('coordinates', "")
@@ -483,16 +492,16 @@ def edit_client_request_zone(request):
         if not zone_id:
             errors['zone_id'] = ['Zone ID is required.']
 
-        if not client_id:
-            errors['client_id'] = ['Client ID is required.']
+        #if not client_id:
+        #    errors['client_id'] = ['Client ID is required.']
 
         if not zone_name:
             errors['zone_name'] = ['Zone name is required.']
 
-        try:
-            client = Client.objects.get(client_id=client_id)
-        except:
-            errors['client_id'] = ['Client does not exist.']
+        #try:
+        #    client = Client.objects.get(client_id=client_id)
+        #except:
+        #    errors['client_id'] = ['Client does not exist.']
 
         try:
             zone = ClientZone.objects.get(zone_id=zone_id)
@@ -542,6 +551,7 @@ def edit_client_request_zone_site(request):
 
     if request.method == 'POST':
         site_id = request.data.get('site_id', "")
+        client_id = request.data.get('client_id', "")
         site_name = request.data.get('site_name', "")
         description = request.data.get('description', "")
         lat = request.data.get('lat', "")
@@ -550,6 +560,12 @@ def edit_client_request_zone_site(request):
         no_of_guards = request.data.get('no_of_guards', "")
         guards_gender = request.data.get('guards_gender', "")
         site_type = request.data.get('site_type', "")
+
+        if not site_id:
+            errors['site_id'] = ['Site ID is required.']
+
+        if not client_id:
+            errors['client_id'] = ['Client ID is required.']
 
         if not site_id:
             errors['site_id'] = ['Site ID is required.']
@@ -563,6 +579,12 @@ def edit_client_request_zone_site(request):
         except:
             errors['site_id'] = ['Site does not exist.']
 
+        try:
+           client = Client.objects.get(client_id=client_id)
+        except:
+           errors['client_id'] = ['Client does not exist.']
+
+
 
         if errors:
             payload['message'] = "Errors"
@@ -570,6 +592,7 @@ def edit_client_request_zone_site(request):
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
         site.site_name = site_name
+        site.client = client
         site.description = description
         site.lat = lat
         site.lng = lng
