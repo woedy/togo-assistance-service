@@ -63,7 +63,7 @@ class AllBookingsSerializer(serializers.ModelSerializer):
 
 
 class ClientZoneDetailsSerializer(serializers.ModelSerializer):
-    client = ClientDetailsSerializer(many=False)
+    #client = ClientDetailsSerializer(many=False)
 
     class Meta:
         model = ClientZone
@@ -73,7 +73,7 @@ class ClientZoneDetailsSerializer(serializers.ModelSerializer):
 
 
 class AllClientZonesSerializer(serializers.ModelSerializer):
-    client = ClientDetailsSerializer(many=False)
+    #client = ClientDetailsSerializer(many=False)
 
     class Meta:
         model = ClientZone
@@ -86,6 +86,7 @@ class AllClientZonesSerializer(serializers.ModelSerializer):
 
 class ClientPostSiteDetailsSerializer(serializers.ModelSerializer):
     client_zone = ClientZoneDetailsSerializer(many=False)
+    client = ClientDetailsSerializer(many=False)
 
     class Meta:
         model = ClientPostSite
@@ -96,6 +97,7 @@ class ClientPostSiteDetailsSerializer(serializers.ModelSerializer):
 
 class AllClientPostSitesSerializer(serializers.ModelSerializer):
     client_zone = ClientZoneDetailsSerializer(many=False)
+    client = ClientDetailsSerializer(many=False)
 
     class Meta:
         model = ClientPostSite

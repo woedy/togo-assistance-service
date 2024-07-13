@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.api.serializers import AllFieldReportsSerializer, FieldReportDetailsSerializer
 from bookings.models import FieldReport, Booking
+from notifications.models import Notification
 
 
 @api_view(['POST', ])
@@ -50,10 +51,19 @@ def add_field_report(request):
 
             )
 
+            notification = Notification.objects.create(
+                english_title='Field Report Added',
+                french_title='Field Report Added',
+                english_subject="A new field report for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+                french_subject="A new field report for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+                department="COMMERCIAL"
+            )
+
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
@@ -205,6 +215,14 @@ def edit_field_report(request):
         field_report.title = title
         field_report.report = report
         field_report.save()
+
+        notification = Notification.objects.create(
+            english_title='Field Report Edited',
+            french_title='Field Report Edited',
+            english_subject="Field report for " + booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            french_subject="Field report for " + booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            department="COMMERCIAL"
+        )
 
         payload['message'] = "Successful"
         payload['data'] = data

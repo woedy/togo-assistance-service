@@ -148,6 +148,24 @@ DEPARTMENT = (
 )
 
 
+STATUS_CHOICE = (
+
+    ('Created', 'Created'),
+    ('Pending', 'Pending'),
+
+    ('Approved', 'Approved'),
+    ('Declined', 'Declined'),
+
+    ('Unresolved', 'Unresolved'),
+    ('Resolved', 'Resolved'),
+
+    ('Review', 'Review'),
+
+    ('Completed', 'Completed'),
+    ('Canceled', 'Canceled'),
+)
+
+
 
 class ClientComplaint(models.Model):
     complaint_id = models.CharField(max_length=200, null=True, blank=True)
@@ -159,6 +177,8 @@ class ClientComplaint(models.Model):
     note = models.TextField(null=True, blank=True)
 
     forward_to = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    status = models.CharField(max_length=255, default="Pending", null=True, blank=True, choices=STATUS_CHOICE)
 
     is_archived = models.BooleanField(default=False)
 

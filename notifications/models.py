@@ -19,8 +19,11 @@ DEPARTMENT = (
 )
 
 class Notification(models.Model):
-    title = models.CharField(max_length=1000, null=True, blank=True)
-    subject = models.TextField(null=True, blank=True)
+    english_title = models.CharField(max_length=1000, null=True, blank=True)
+    french_title = models.CharField(max_length=1000, null=True, blank=True)
+
+    english_subject = models.TextField(null=True, blank=True)
+    french_subject = models.TextField(null=True, blank=True)
 
     read = models.BooleanField(default=False)
 

@@ -12,11 +12,7 @@ from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.models import Booking, Estimate
 from legal.api.serializers import AllContractsSerializer
 from legal.models import Contract, Legal
-
-
-
-
-
+from notifications.models import Notification
 
 
 @api_view(['POST', ])
@@ -51,6 +47,14 @@ def add_client_request_contract_view(request):
             new_contract = Contract.objects.create(
                 booking=booking,
                 file=file
+            )
+
+            notification = Notification.objects.create(
+                english_title='Contract Added',
+                french_title='Contract Added',
+                english_subject="A new Contract for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+                french_subject="A new Contact for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+                department="COMMERCIAL"
             )
 
         if errors:
@@ -104,6 +108,14 @@ def edit_client_request_contract_view(request):
 
         contract.file = file
         contract.save()
+
+        notification = Notification.objects.create(
+            english_title='Contract Edited',
+            french_title='Contract Edited',
+            english_subject="Contract for " + contract.booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            french_subject="Contact for " + contract.booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            department="COMMERCIAL"
+        )
 
 
         data['contract_id'] = contract.contract_id

@@ -645,6 +645,46 @@ def edit_client_complaint(request):
     return Response(payload)
 
 
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def change_complaint_status(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+
+    if request.method == 'POST':
+        complaint_id = request.data.get('complaint_id', "")
+        status = request.data.get('status', "")
+
+        if not status:
+            errors['status'] = ['Status is required.']
+
+
+        try:
+            complaint = ClientComplaint.objects.get(complaint_id=complaint_id)
+        except:
+            errors['complaint_id'] = ['Complaint does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        complaint.status = status
+        complaint.save()
+
+
+        data["complaint_id"] = complaint_id
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
 @api_view(['GET', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
