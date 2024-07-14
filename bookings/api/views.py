@@ -156,9 +156,9 @@ def forward_to_department(request):
 
             notification = Notification.objects.create(
                 english_title='Forwarded Client Request',
-                french_title='Forwarded Client Request',
+                french_title='Demande de client transmise',
                 english_subject="A new client request has been forwarded to you department. Check and give it the necessary attention.",
-                french_subject="A new client request has been forwarded to you department. Check and give it the necessary attention.",
+                french_subject="Une nouvelle demande de client vous a été transmise. Veuillez vérifier et lui accorder l'attention nécessaire.",
                 department=department
             )
 

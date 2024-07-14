@@ -50,10 +50,10 @@ def add_client_request_contract_view(request):
             )
 
             notification = Notification.objects.create(
-                english_title='Contract Added',
-                french_title='Contract Added',
+                english_title='New Contract Added',
+                french_title='Nouveau contrat ajouté',
                 english_subject="A new Contract for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
-                french_subject="A new Contact for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+                french_subject="Un nouveau contrat pour " + booking.client.company_name + " a été ajouté. Veuillez vérifier et lui accorder l'attention nécessaire.",
                 department="COMMERCIAL"
             )
 
@@ -111,9 +111,9 @@ def edit_client_request_contract_view(request):
 
         notification = Notification.objects.create(
             english_title='Contract Edited',
-            french_title='Contract Edited',
+            french_title='Contrat modifié',
             english_subject="Contract for " + contract.booking.client.company_name + " has been edited. Check and give it the necessary attention.",
-            french_subject="Contact for " + contract.booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            french_subject="Le contrat de " + contract.booking.client.company_name + " a été modifié. Veuillez vérifier et lui accorder l'attention nécessaire.",
             department="COMMERCIAL"
         )
 

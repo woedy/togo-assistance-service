@@ -53,9 +53,9 @@ def add_field_report(request):
 
             notification = Notification.objects.create(
                 english_title='Field Report Added',
-                french_title='Field Report Added',
+                french_title='Rapport de terrain ajouté',
                 english_subject="A new field report for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
-                french_subject="A new field report for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+                french_subject="Un nouveau rapport de terrain pour " + booking.client.company_name + " a été ajouté. Veuillez vérifier et lui accorder l'attention nécessaire.",
                 department="COMMERCIAL"
             )
 
@@ -218,9 +218,9 @@ def edit_field_report(request):
 
         notification = Notification.objects.create(
             english_title='Field Report Edited',
-            french_title='Field Report Edited',
+            french_title='Rapport de terrain modifié',
             english_subject="Field report for " + booking.client.company_name + " has been edited. Check and give it the necessary attention.",
-            french_subject="Field report for " + booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            french_subject="Le rapport de terrain pour " + booking.client.company_name + " a été modifié. Veuillez vérifier et lui accorder l'attention nécessaire.",
             department="COMMERCIAL"
         )
 
