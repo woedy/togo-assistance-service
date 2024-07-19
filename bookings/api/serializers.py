@@ -4,7 +4,7 @@ from rest_framework import serializers
 from bookings.models import Booking, BookedGuard, ForwardingList, FieldReport
 from clients.api.serializers import AllClientsSerializer
 from clients.models import Client, ClientComplaint
-from post_sites.models import ClientZone, ClientPostSite
+from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate
 from security_team.api.serializers import SecurityGuardDetailsSerializer
 
 User = get_user_model()
@@ -60,10 +60,19 @@ class AllBookingsSerializer(serializers.ModelSerializer):
         return [fl.department for fl in obj.forwarding_list.all()]
 
 
+class ClientZoneCoordinateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ClientZoneCoordinate
+        fields = ["lat", "lng"]
+
+
 
 
 class ClientZoneDetailsSerializer(serializers.ModelSerializer):
     #client = ClientDetailsSerializer(many=False)
+    zone_coordinates = ClientZoneCoordinateSerializer(many=True)
+
 
     class Meta:
         model = ClientZone
@@ -74,6 +83,7 @@ class ClientZoneDetailsSerializer(serializers.ModelSerializer):
 
 class AllClientZonesSerializer(serializers.ModelSerializer):
     #client = ClientDetailsSerializer(many=False)
+    zone_coordinates = ClientZoneCoordinateSerializer(many=True)
 
     class Meta:
         model = ClientZone

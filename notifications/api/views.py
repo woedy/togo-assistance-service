@@ -66,7 +66,7 @@ def get_all_notifications(request):
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
-    all_notification = Notification.objects.all().filter(read=False).order_by('-created_at')
+    all_notification = Notification.objects.all().order_by('-created_at')
 
 
     if search_query:

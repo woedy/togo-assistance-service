@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/billing/', include('billing.api.urls', 'billing_api')),
     path('api/legal/', include('legal.api.urls', 'legal_api')),
     path('api/notifications/', include('notifications.api.urls', 'notifications_api')),
+    path('api/human-resources/', include('human_resources.api.urls', 'human_resources_api')),
 
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

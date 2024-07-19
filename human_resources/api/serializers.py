@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from human_resources.models import HumanResource
+from human_resources.models import HumanResource, StaffPayrollEntry, StaffPayPeriod
 
 User = get_user_model()
 
@@ -20,5 +20,38 @@ class HumanResourceDetailsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+
+
+
+
+
+class StaffPayPeriodDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StaffPayPeriod
+        fields = "__all__"
+
+
+class AllStaffPayPeriodsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffPayPeriod
+        fields = "__all__"
+
+
+
+
+
+class StaffPayrollEntryDetailsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = StaffPayrollEntry
+        fields = "__all__"
+
+
+class AllStaffPayrollEntrysSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffPayrollEntry
+        fields = "__all__"
 
 

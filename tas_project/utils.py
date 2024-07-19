@@ -201,6 +201,23 @@ def unique_complaint_id_generator(instance):
         return None
     return complaint_id
 
+def unique_staff_complaint_id_generator(instance):
+    """
+    This is for a staff_complaint_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    staff_complaint_id = "COMP-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(STF)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(staff_complaint_id=staff_complaint_id).exists()
+    if qs_exists:
+        return None
+    return staff_complaint_id
+
+
+
 def unique_supplier_id_generator(instance):
     """
     This is for a supplier_id field
@@ -413,6 +430,22 @@ def unique_payroll_id_generator(instance):
     if qs_exists:
         return None
     return payroll_id
+
+
+def unique_staff_payroll_id_generator(instance):
+    """
+    This is for a staff_payroll_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    staff_payroll_id = "PAYROLL-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(STF)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(staff_payroll_id=staff_payroll_id).exists()
+    if qs_exists:
+        return None
+    return staff_payroll_id
 
 
 
