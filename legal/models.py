@@ -67,8 +67,6 @@ STATUS_CHOICE = (
 
     ('Created', 'Created'),
     ('Pending', 'Pending'),
-    ('Operations', 'Operations'),
-    ('Contract', 'Contract'),
     ('Rescheduled', 'Rescheduled'),
     ('Approved', 'Approved'),
     ('Declined', 'Declined'),
@@ -91,6 +89,9 @@ class Contract(models.Model):
     sent = models.BooleanField(default=False)
     signed = models.BooleanField(default=False)
     declined = models.BooleanField(default=False)
+
+    status = models.CharField(max_length=255, default="Pending", null=True, blank=True, choices=STATUS_CHOICE)
+
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)

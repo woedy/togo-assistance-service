@@ -1,9 +1,18 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from security_team.models import SecurityGuard, GuardAvailability, TimeSlot
+from security_team.models import SecurityGuard, GuardAvailability, TimeSlot, SecurityGuardFile
 
 User = get_user_model()
+
+
+
+class AllGuardFilesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SecurityGuardFile
+        fields = "__all__"
+
 
 
 class SecurityGuardUserDetailSerializer(serializers.ModelSerializer):

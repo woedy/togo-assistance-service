@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from bookings.models import Booking, BookedGuard, ForwardingList, FieldReport
+from bookings.models import Booking, BookedGuard, ForwardingList, FieldReport, BookingEmail
 from clients.api.serializers import AllClientsSerializer
 from clients.models import Client, ClientComplaint
-from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate
+from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate, PostOrder, SiteReport
 from security_team.api.serializers import SecurityGuardDetailsSerializer
 
 User = get_user_model()
@@ -150,4 +150,47 @@ class AllFieldReportsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FieldReport
+        fields = "__all__"
+
+
+class AllBookingEmailsSerializer(serializers.ModelSerializer):
+    booking = AllBookingsSerializer(many=False)
+
+    class Meta:
+        model = BookingEmail
+        fields = "__all__"
+
+
+
+
+class PostOrderDetailsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = PostOrder
+        fields = "__all__"
+
+class AllPostOrdersSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = PostOrder
+        fields = "__all__"
+
+
+
+
+
+class SiteReportDetailsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = SiteReport
+        fields = "__all__"
+
+class AllSiteReportsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = SiteReport
         fields = "__all__"

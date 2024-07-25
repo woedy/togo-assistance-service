@@ -77,3 +77,48 @@ def get_hr_dashboard(request):
 
     return Response(payload, status=status.HTTP_200_OK)
 
+
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def change_employment_status(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        user_id = request.data.get('user_id', "")
+        employment_status = request.data.get('employment_status', "")
+
+
+        if not user_id:
+            errors['user_id'] = ['User ID is required.']
+
+        if not employment_status:
+            errors['employment_status'] = ['Employment Status is required.']
+
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except:
+            errors['user_id'] = ['User does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        user.employment_status = employment_status
+        user.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+

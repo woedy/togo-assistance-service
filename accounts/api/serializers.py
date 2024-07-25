@@ -1,5 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
+from accounts.models import UserFile
+
 User = get_user_model()
 
 
@@ -26,6 +29,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         #     raise serializers.ValidationError({'password': 'Passwords must match.'})
         user.set_password(password)
         user.is_active = True
+        user.employment_status = 'Employed'
         user.save()
 
         return user
@@ -63,3 +67,18 @@ class ListAllUsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['user_id', 'email', 'first_name',  'last_name', 'department', 'photo','phone',]
+
+
+
+
+
+class AllUserFilesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserFile
+        fields = "__all__"
+
+
+class UserFileDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserFile
+        fields = "__all__"

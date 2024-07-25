@@ -1,9 +1,16 @@
 from django.urls import path
 
 from bookings.api.assign_site_views import assign_guard, unassign_guard, re_assign_guard, get_all_assigned_guards
+from bookings.api.booking_email_views import send_booking_email, get_all_booking_emails_view
 from bookings.api.field_report_views import add_field_report, edit_field_report, get_all_field_reports_view, \
     get_field_report_details_view, archive_field_report, delete_field_report, unarchive_field_report, \
     get_all_archived_field_reports_view
+from bookings.api.post_order_views import add_post_order, get_all_post_orders_view, edit_post_order, \
+    get_post_order_details_view, archive_post_order, unarchive_post_order, delete_post_order, \
+    get_all_unarchived_post_orders_view
+from bookings.api.site_report_views import get_all_unarchived_site_reports_view, unarchive_site_report, \
+    delete_site_report, archive_site_report, get_all_site_reports_view, get_site_report_details_view, add_site_report, \
+    edit_site_report
 from bookings.api.views import add_client_request_basic_info_view, add_client_request_basic_zone_view, \
     add_client_request_basic_zone_sites_view, add_client_request_date_times_view, get_all_client_requests, \
     get_client_request_details, edit_client_request, edit_client_request_zone, edit_client_request_zone_site, \
@@ -70,5 +77,37 @@ urlpatterns = [
     path('delete-field-report/', delete_field_report, name="delete_field_report"),
     path('unarchive-field-report/', unarchive_field_report, name="unarchive_field_report"),
     path('get-all-archived-field-reports/', get_all_archived_field_reports_view, name="get_all_archived_field_reports_view"),
+
+
+
+    ##### POST order
+
+    path('add-post-order/', add_post_order, name="add_post_order"),
+    path('edit-post-order/', edit_post_order, name="edit_post_order"),
+    path('get-all-post-orders/', get_all_post_orders_view, name="get_all_post_orders_view"),
+    path('get-post-order-details/', get_post_order_details_view, name="get_post_order_details_view"),
+    path('archive-post-order/', archive_post_order, name="archive_post_order"),
+    path('delete-post-order/', delete_post_order, name="delete_post_order"),
+    path('unarchive-post-order/', unarchive_post_order, name="unarchive_post_order"),
+    path('get-all-archived-post-orders/', get_all_unarchived_post_orders_view,
+         name="get_all_archived_field_reports_view"),
+
+    ##### Site Report
+
+    path('add-site-report/', add_site_report, name="add_site_report"),
+    path('edit-site-report/', edit_site_report, name="edit_site_report"),
+    path('get-all-site-reports/', get_all_site_reports_view, name="get_all_site_reports_view"),
+    path('get-post-site-report/', get_site_report_details_view, name="get_site_report_details_view"),
+    path('archive-site-report/', archive_site_report, name="archive_site_report"),
+    path('delete-site-report/', delete_site_report, name="delete_site_report"),
+    path('unarchive-site-report/', unarchive_site_report, name="unarchive_site_report"),
+    path('get-all-archived-site-reports/', get_all_unarchived_site_reports_view,
+         name="get_all_unarchived_site_reports_view"),
+
+
+    ##### Booking Email
+
+    path('send-booking-email/', send_booking_email, name="send_booking_email"),
+    path('get-all-booking-emails/', get_all_booking_emails_view, name="get_all_booking_emails_view"),
 
 ]

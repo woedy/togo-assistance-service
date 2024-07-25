@@ -12,6 +12,7 @@ from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.models import Booking, Estimate
 from legal.api.serializers import AllContractsSerializer
 from legal.models import Contract, Legal
+from notifications.models import Notification
 from secretary.api.serializers import AllFilesSerializer
 from security_team.models import FileManagement
 
@@ -27,6 +28,7 @@ def add_file_view(request):
     if request.method == 'POST':
         file_name = request.data.get('file_name', "")
         description = request.data.get('description', "")
+        note = request.data.get('note', "")
         file = request.data.get('file', "")
 
 
@@ -44,9 +46,17 @@ def add_file_view(request):
         new_file = FileManagement.objects.create(
             file=file,
             file_name=file_name,
-            description=description
+            description=description,
+            note=note,
         )
 
+        notification = Notification.objects.create(
+            english_title='New File Added',
+            french_title='Nouveau fichier ajouté',
+            english_subject="A new File for has been added. Check and give it the necessary attention.",
+            french_subject="Un nouveau fichier a été ajouté. Veuillez le vérifier et lui accorder l'attention nécessaire.",
+            department="SECRETARY"
+        )
 
         data['file_id'] = new_file.file_id
 

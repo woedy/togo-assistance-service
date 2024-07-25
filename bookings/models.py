@@ -249,3 +249,15 @@ class FieldReport(models.Model):
 
 
 
+
+class BookingEmail(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='booking_emails')
+
+    title = models.CharField(max_length=1000, null=True, blank=True)
+    message = models.TextField(null=True, blank=True)
+
+    is_archived = models.BooleanField(default=False)
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

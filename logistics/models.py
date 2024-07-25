@@ -1,10 +1,48 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import pre_save
 
+from communications.models import PrivateChatRoom
 from security_team.models import SecurityGuard
 from tas_project.utils import unique_supplier_id_generator, unique_category_id_generator, unique_equipment_id_generator, \
     unique_inventory_id_generator, unique_assignment_id_generator, unique_order_id_generator, \
-    unique_order_item_id_generator, unique_maintenance_id_generator
+    unique_order_item_id_generator, unique_maintenance_id_generator, unique_logistics_id_generator
+
+User = get_user_model()
+
+
+
+class Logistics(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logistics')
+    logistics_id = models.CharField(max_length=200, null=True, blank=True)
+    room = models.ForeignKey(PrivateChatRoom, on_delete=models.SET_NULL, null=True, blank=True, related_name="logistics_user_room")
+
+    profile_complete = models.BooleanField(default=False)
+
+    currently_checked_in = models.BooleanField(default=False)
+    last_worked = models.DateTimeField(blank=True, null=True)
+
+
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return self.user.email
+
+
+
+def pre_save_logistics_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.logistics_id:
+        instance.logistics_id = unique_logistics_id_generator(instance)
+
+pre_save.connect(pre_save_logistics_id_receiver, sender=Logistics)
+
+
+
+
+
 
 
 class Category(models.Model):

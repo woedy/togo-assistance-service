@@ -7,7 +7,7 @@ from django.db.models.signals import post_save, pre_save
 
 from communications.models import PrivateChatRoom
 from tas_project.utils import unique_hr_id_generator, unique_staff_complaint_id_generator, \
-    unique_staff_payroll_id_generator
+    unique_staff_payroll_id_generator, unique_recruitment_id_generator
 
 User = get_user_model()
 
@@ -166,4 +166,120 @@ def pre_save_staff_payroll_id_receiver(sender, instance, *args, **kwargs):
         instance.staff_payroll_id = unique_staff_payroll_id_generator(instance)
 
 pre_save.connect(pre_save_staff_payroll_id_receiver, sender=StaffPayrollEntry)
+
+
+
+
+def get_file_ext(filepath):
+    base_name = os.path.basename(filepath)
+    name, ext = os.path.splitext(base_name)
+    return name, ext
+
+
+def upload_image_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "operation/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+
+
+
+def get_default_profile_image():
+    return "defaults/default_profile_image.png"
+
+
+GENDER_CHOICES = (
+    ('Male', 'Male'),
+    ('Female', 'Female'),
+
+)
+
+STAGE_CHOICES = (
+    ('Applied', 'Applied'),
+    ('Screening', 'Screening'),
+    ('Shortlisted', 'Shortlisted'),
+    ('Interview', 'Interview'),
+    ('Evaluation', 'Evaluation'),
+    ('Employed', 'Employed'),
+
+)
+
+
+class Recruitment(models.Model):
+    recruitment_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    email = models.EmailField(max_length=255, unique=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+
+    gender = models.CharField(max_length=100, choices=GENDER_CHOICES, blank=True, null=True)
+    stage = models.CharField(max_length=100, choices=STAGE_CHOICES, blank=True, null=True)
+    photo = models.ImageField(upload_to=upload_image_path, null=True, blank=True, default=get_default_profile_image)
+    dob = models.DateTimeField(null=True, blank=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    position = models.CharField(max_length=255, null=True, blank=True)
+
+
+    is_archived = models.BooleanField(default=False)
+
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_recruitment_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.recruitment_id:
+        instance.recruitment_id = unique_recruitment_id_generator(instance)
+
+pre_save.connect(pre_save_recruitment_id_receiver, sender=Recruitment)
+
+
+
+
+def upload_user_file_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "recruitment/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+class RecruitmentAttachment(models.Model):
+    recruitment = models.ForeignKey(Recruitment, on_delete=models.CASCADE, related_name='recruitment_attachments')
+
+    file = models.FileField(upload_to=upload_user_file_path, null=True, blank=True)
+
+    file_name = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    is_archived = models.BooleanField(default=False)
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+
+
+
+class NonSystemUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='non_system_user')
+    non_user_id = models.CharField(max_length=200, null=True, blank=True)
+    job_title = models.CharField(max_length=200, null=True, blank=True)
+
+
+
+    is_deleted = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+    def __str__(self):
+        return self.user.first_name
 

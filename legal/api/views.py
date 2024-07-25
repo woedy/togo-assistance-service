@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from bookings.models import Booking, Estimate
+from bookings.models import Booking
 from legal.api.serializers import AllContractsSerializer
 from legal.models import Contract, Legal
 from notifications.models import Notification
@@ -66,10 +66,12 @@ def add_client_request_contract_view(request):
         data['contract_id'] = new_contract.contract_id
 
 
-        payload['message'] = "Successful"
-        payload['data'] = data
+    payload['message'] = "Successful"
+    payload['data'] = data
 
     return Response(payload)
+
+
 
 
 
@@ -116,6 +118,97 @@ def edit_client_request_contract_view(request):
             french_subject="Le contrat de " + contract.booking.client.company_name + " a été modifié. Veuillez vérifier et lui accorder l'attention nécessaire.",
             department="COMMERCIAL"
         )
+
+
+        data['contract_id'] = contract.contract_id
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def change_contract_status_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        contract_id = request.data.get('contract_id', "")
+        _status = request.data.get('status', "")
+
+
+        if not contract_id:
+            errors['contract_id'] = ['Contract ID is required.']
+
+        if not _status:
+            errors['status'] = ['Status is required.']
+
+
+        try:
+            contract = Contract.objects.get(contract_id=contract_id)
+        except:
+            errors['contract_id'] = ['Contract does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+        contract.status = _status
+        contract.save()
+
+        #notification = Notification.objects.create(
+        #    english_title='Contract Edited',
+        #    french_title='Contrat modifié',
+        #    english_subject="Contract for " + contract.booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+        #    french_subject="Le contrat de " + contract.booking.client.company_name + " a été modifié. Veuillez vérifier et lui accorder l'attention nécessaire.",
+        #    department="COMMERCIAL"
+        #)
+
+
+
+        context = {
+            'email': contract.booking.client.user.email,
+            'first_name': contract.booking.client.user.first_name,
+            'last_name': contract.booking.client.user.last_name,
+            'company_name': contract.booking.client.company_name,
+            'status': _status,
+            'message': 'Message here',
+        }
+
+        txt_ = get_template("booking/contract/contract_status.html").render(context)
+        html_ = get_template("booking/contract/contract_status.txt").render(context)
+
+        subject = 'Contract Status Change'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [contract.booking.client.user.email]
+
+        # # Use Celery chain to execute tasks in sequence
+        # email_chain = chain(
+        #     send_generic_email.si(subject, txt_, from_email, recipient_list, html_),
+        # )
+        # # Execute the Celery chain asynchronously
+        # email_chain.apply_async()
+
+        send_mail(
+            subject,
+            txt_,
+            from_email,
+            recipient_list,
+            html_message=html_,
+            fail_silently=False,
+        )
+
+
 
 
         data['contract_id'] = contract.contract_id

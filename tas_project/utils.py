@@ -79,6 +79,22 @@ def unique_guard_id_generator(instance):
         return None
     return guard_id
 
+
+def unique_guard_file_id_generator(instance):
+    """
+    This is for a guard_file_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    guard_file_id = "GDF-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(F)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(guard_file_id=guard_file_id).exists()
+    if qs_exists:
+        return None
+    return guard_file_id
+
 def unique_secretary_id_generator(instance):
     """
     This is for a secretary_id field
@@ -108,6 +124,22 @@ def unique_hr_id_generator(instance):
     if qs_exists:
         return None
     return hr_id
+
+
+def unique_logistics_id_generator(instance):
+    """
+    This is for a logistics_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    logistics_id = "LG-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(TCS)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(logistics_id=logistics_id).exists()
+    if qs_exists:
+        return None
+    return logistics_id
 
 def unique_admin_id_generator(instance):
     """
@@ -549,6 +581,22 @@ def unique_maintenance_id_generator(instance):
         return None
     return maintenance_id
 
+
+def unique_recruitment_id_generator(instance):
+    """
+    This is for a recruitment_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    recruitment_id = "REC-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(MNT)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(recruitment_id=recruitment_id).exists()
+    if qs_exists:
+        return None
+    return recruitment_id
+
 def unique_deployment_id_generator(instance):
     """
     This is for a deployment_id field
@@ -578,6 +626,42 @@ def unique_attendance_id_generator(instance):
     if qs_exists:
         return None
     return attendance_id
+
+
+def unique_post_order_id_generator(instance):
+    """
+    This is for a post_order_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    post_order_id = "post-o-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-der"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(post_order_id=post_order_id).exists()
+    if qs_exists:
+        return None
+    return post_order_id
+
+
+
+
+def unique_site_report_id_generator(instance):
+    """
+    This is for a site_report_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    site_report_id = "site-rep-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-r"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(site_report_id=site_report_id).exists()
+    if qs_exists:
+        return None
+    return site_report_id
+
+
 
 def unique_file_id_generator(instance):
     """

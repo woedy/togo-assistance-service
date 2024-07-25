@@ -6,7 +6,8 @@ from django.db.models.signals import pre_save
 
 from clients.models import Client
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_site_id_generator, unique_zone_id_generator
+from tas_project.utils import unique_site_id_generator, unique_zone_id_generator, unique_post_order_id_generator, \
+    unique_site_report_id_generator
 
 
 class ClientZone(models.Model):
@@ -117,13 +118,47 @@ class PostSiteActivity(models.Model):
 
 
 class PostOrder(models.Model):
+    post_order_id = models.CharField(max_length=200, null=True, blank=True)
+
     post_site = models.ForeignKey(ClientPostSite, on_delete=models.CASCADE, related_name="client_post_orders")
     subject = models.CharField(max_length=1000, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
+    is_archived = models.BooleanField(default=False)
+
+
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_post_order_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.post_order_id:
+        instance.post_order_id = unique_post_order_id_generator(instance)
+
+pre_save.connect(pre_save_post_order_id_receiver, sender=PostOrder)
+
+class SiteReport(models.Model):
+    site_report_id = models.CharField(max_length=200, null=True, blank=True)
+
+    post_site = models.ForeignKey(ClientPostSite, on_delete=models.CASCADE, related_name="site_reports")
+    subject = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    is_archived = models.BooleanField(default=False)
+
+
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_site_report_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.site_report_id:
+        instance.site_report_id = unique_site_report_id_generator(instance)
+
+pre_save.connect(pre_save_site_report_id_receiver, sender=SiteReport)
+
 
 
 
@@ -136,6 +171,10 @@ class PostSiteNote(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+    
 
 def get_file_ext(filepath):
     base_name = os.path.basename(filepath)

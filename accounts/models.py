@@ -28,6 +28,16 @@ def upload_image_path(instance, filename):
         final_filename=final_filename
     )
 
+
+def upload_user_file_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "users/file/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+
 def get_default_profile_image():
     return "defaults/default_profile_image.png"
 
@@ -108,14 +118,27 @@ GENDER_CHOICES = (
 
 
 
+
+EMPLOYMENT_STATUS = (
+    ('Employed', 'Employed'),
+    ('Resigned', 'Resigned'),
+    ('Dismissed', 'Dismissed'),
+    ('Retired', 'Retired'),
+    ('Death', 'Death'),
+
+)
+
+
+
 class User(AbstractBaseUser):
     user_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    email = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255, unique=True,  null=True, blank=True)
     username = models.CharField(max_length=255, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
 
     department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+    employment_status = models.CharField(max_length=100, choices=EMPLOYMENT_STATUS, blank=True, null=True)
     fcm_token = models.TextField(blank=True, null=True)
 
     otp_code = models.CharField(max_length=10, blank=True, null=True)
@@ -158,6 +181,8 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def __str__(self):
+        if self.email is None:
+            return 'No Email'
         return self.email
 
 
@@ -221,3 +246,23 @@ class UserEmergencyContact(AbstractBaseUser):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_emergency_contacts')
     phone_number = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+
+class UserFile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_files')
+    user_file_id = models.CharField(max_length=200, null=True, blank=True)
+
+    file = models.FileField(upload_to=upload_user_file_path, null=True, blank=True)
+
+    file_name = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    is_archived = models.BooleanField(default=False)
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+

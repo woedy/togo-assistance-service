@@ -26,6 +26,7 @@ from communications.models import PrivateChatRoom
 from human_resources.api.serializers import HumanResourceDetailsSerializer
 from human_resources.models import HumanResource
 from legal.models import Legal
+from logistics.models import Logistics
 from operations.api.serializers import OperationsDetailsSerializer
 from operations.models import Operation
 from secretary.api.serializers import SecretaryDetailsSerializer
@@ -243,6 +244,24 @@ def register_user(request):
                 )
                 data["room_id"] = legal_profile.room.room_id
                 data["legal_id"] = legal_profile.legal_id
+
+            if department == "LOGISTICS":
+                user.department = department
+                user.phone = phone
+                user.photo = photo
+                user.save()
+
+                data["department"] = user.department
+                data["photo"] = user.photo.url
+                data["phone"] = user.phone
+
+                logistics_profile = Logistics.objects.create(
+                    user=user,
+                    room=room
+
+                )
+                data["room_id"] = logistics_profile.room.room_id
+                data["logistics_id"] = logistics_profile.logistics_id
 
 
         # Generate token using the custom serializer

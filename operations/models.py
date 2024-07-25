@@ -14,8 +14,14 @@ User = get_user_model()
 
 ROLE_CHOICES = (
     ('Supervisor', 'Supervisor'),
-    ('Assigner', 'Assigner'),
-    ('Logistics', 'Logistics'),
+    ('Post Managers', 'Post Managers'),
+    ('Inspectors', 'Inspectors'),
+    ('Trainers', 'Trainers'),
+    ('Controllers', 'Controllers'),
+    ('Operations Department Managers', 'Operations Department Managers'),
+    ('Administrative Assistant', 'Administrative Assistant'),
+    ('Director of operations', 'Director of operations'),
+    ('Deputy Director of operations', 'Deputy Director of operations'),
 )
 
 

@@ -1,5 +1,7 @@
 from django.urls import path
 
+from accounts.api.user_files_views import add_user_file, get_all_user_files_view, get_user_file_details_view, \
+    archive_user_file, delete_user_file, unarchive_user_file, get_all_archived_user_files_view
 from accounts.api.views import register_user, verify_user_email, resend_email_verification, UserLogin, \
     PasswordResetView, confirm_otp_password_view, resend_password_otp, new_password_reset_view, remove_user_view, \
     edit_profile, list_all_users_view, get_user_details_view, archive_user_view, unarchive_user_view, \
@@ -32,5 +34,13 @@ urlpatterns = [
     path('archive-user/', archive_user_view, name="archive_user_view"),
     path('unarchive-user/', unarchive_user_view, name="unarchive_user_view"),
     path('delete-user/', delete_user_view, name="delete_user_view"),
+
+    path('add-user-file/', add_user_file, name="add_client"),
+    path('get-all-user-files/', get_all_user_files_view, name="get_all_user_files_view"),
+    path('get-user-file-details/', get_user_file_details_view, name="get_user_file_details_view"),
+    path('archive-user-file/', archive_user_file, name="archive_user_file"),
+    path('delete-user-file/', delete_user_file, name="delete_user_file"),
+    path('unarchive-user-file/', unarchive_user_file, name="unarchive_user_file"),
+    path('get-all-archived-user-files/', get_all_archived_user_files_view, name="get_all_archived_user_files_view"),
 
 ]
