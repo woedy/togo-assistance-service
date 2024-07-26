@@ -43,7 +43,7 @@ urlpatterns = [
     path('get-all-archived-staff-payroll-entries/', get_all_archived_staff_payroll_entry_view,
          name="get_all_archived_staff_pay_period_view"),
 
-    path('change-employment-status', change_employment_status, name="change_employment_status"),
+    path('change-employment-status/', change_employment_status, name="change_employment_status"),
 
     path('add-recruitment/', add_recruitment, name="add_recruitment"),
     path('edit-recruitment/', edit_recruitment, name="edit_recruitment"),
