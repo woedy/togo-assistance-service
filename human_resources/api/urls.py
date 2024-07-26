@@ -56,7 +56,7 @@ urlpatterns = [
 
     path('add-recruitment-attachment/', add_recruitment_attachment, name="add_recruitment_attachment"),
     path('get-all-recruitment-attachments/', get_all_recruitment_attachments_view, name="get_all_recruitment_attachments_view"),
-    path('get-recruitment-details-attachment/', get_recruitment_attachment_details_view, name="get_recruitment_attachment_details_view"),
+    path('get-recruitment-attachment-details/', get_recruitment_attachment_details_view, name="get_recruitment_attachment_details_view"),
     path('archive-recruitment-attachment/', archive_recruitment_attachment, name="archive_recruitment_attachment"),
     path('delete-recruitment-attachment/', delete_recruitment_attachment, name="delete_recruitment_attachment"),
     path('unarchive-recruitment-attachment/', unarchive_recruitment_attachment, name="unarchive_recruitment_attachment"),

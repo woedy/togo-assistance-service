@@ -223,9 +223,8 @@ def edit_recruitment(request):
         recruitment.photo = photo
         recruitment.phone = phone
         recruitment.position = position
-        recruitment.dob = dob
 
-        recruitment.user.save()
+        recruitment.save()
 
 
 
@@ -255,25 +254,15 @@ def archive_recruitment(request):
         except:
             errors['recruitment_id'] = ['Recruitment does not exist.']
 
-        try:
-            user = User.objects.get(user_id=recruitment.user.user_id)
-        except:
-            errors['user_id'] = ['User does not exist.']
+
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        user.is_archived = True
-        user.save()
-
-        new_activity = AllActivity.objects.create(
-            user=user,
-            subject="Account Archived",
-            body=user.email + " account archived."
-        )
-        new_activity.save()
+        recruitment.is_archived = True
+        recruitment.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
@@ -301,17 +290,13 @@ def delete_recruitment(request):
         except:
             errors['recruitment_id'] = ['Recruitment does not exist.']
 
-        try:
-            user = User.objects.get(user_id=recruitment.user.user_id)
-        except:
-            errors['user_id'] = ['User does not exist.']
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        user.delete()
+        recruitment.delete()
 
 
         payload['message'] = "Successful"
@@ -340,25 +325,14 @@ def unarchive_recruitment(request):
         except:
             errors['recruitment_id'] = ['Recruitment does not exist.']
 
-        try:
-            user = User.objects.get(user_id=recruitment.user.user_id)
-        except:
-            errors['user_id'] = ['User does not exist.']
-
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        user.is_archived = False
-        user.save()
+        recruitment.is_archived = False
+        recruitment.save()
 
-        new_activity = AllActivity.objects.create(
-            user=user,
-            subject="Account UnArchived",
-            body=user.email + " account archived."
-        )
-        new_activity.save()
 
         payload['message'] = "Successful"
         payload['data'] = data
