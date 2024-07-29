@@ -103,16 +103,12 @@ def set_guard_availability(request):
 
 
 
-
-
-
-@api_view(['POST', ])
+@api_view(['POST'])
 @permission_classes([])
 @authentication_classes([])
 def list_guard_availability(request):
     payload = {}
     data = {}
-
     errors = {}
 
     if request.method == 'POST':
@@ -120,11 +116,17 @@ def list_guard_availability(request):
 
         if not guard_id:
             errors['guard_id'] = ['Guard ID is required.']
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             guard = SecurityGuard.objects.get(guard_id=guard_id)
-        except:
+        except SecurityGuard.DoesNotExist:
             errors['guard_id'] = ['Guard does not exist']
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
         availability_interval = "1 hour"
 
@@ -140,16 +142,11 @@ def list_guard_availability(request):
         }
         threshold_datetime = current_datetime + interval_mapping.get(availability_interval, timedelta(hours=1))
 
-        #data['availability_interval'] = availability_interval
-
         # Filter availability slots based on the threshold_datetime
         all_guard_slots = GuardAvailability.objects.filter(
             guard=guard,
             slot_date__gte=threshold_datetime.date(),
         )
-
-        # print(current_datetime.date())
-        # print("###############")
 
         for _slot in all_guard_slots:
             if str(current_datetime.date()) == str(_slot.slot_date):
@@ -161,18 +158,9 @@ def list_guard_availability(request):
         _all_guard_slots = all_guard_slots_serializer.data
         data['all_guard_availability'] = _all_guard_slots
 
-        if errors:
-            payload['message'] = "Errors"
-            payload['errors'] = errors
-            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
-
         payload['message'] = "Successful"
         payload['data'] = data
         return Response(payload)
 
-
-
-
-
-
+    return Response({'message': 'Invalid request method.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
