@@ -114,6 +114,7 @@ def list_guard_availability(request):
     if request.method == 'POST':
         guard_id = request.data.get('guard_id', "")
 
+
         if not guard_id:
             errors['guard_id'] = ['Guard ID is required.']
             payload['message'] = "Errors"
@@ -149,10 +150,12 @@ def list_guard_availability(request):
         )
 
         for _slot in all_guard_slots:
+
             if str(current_datetime.date()) == str(_slot.slot_date):
+                print("Woooooooooo")
                 # check slots with times before the threshold time
                 print(_slot.slot_date)
-                print(_slot.slot_times)
+                #print(_slot.slot_times)
 
         all_guard_slots_serializer = GuardAvailabilitySerializer(all_guard_slots, many=True)
         _all_guard_slots = all_guard_slots_serializer.data
