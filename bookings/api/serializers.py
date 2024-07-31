@@ -126,6 +126,7 @@ class BookedGuardDetailsSerializer(serializers.ModelSerializer):
 
 class AllBookedGuardsSerializer(serializers.ModelSerializer):
     guard = SecurityGuardDetailsSerializer(many=False)
+    booking = AllBookingsSerializer(many=False)
 
     class Meta:
         model = BookedGuard

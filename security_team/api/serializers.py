@@ -2,8 +2,10 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from security_team.models import SecurityGuard, GuardAvailability, TimeSlot, SecurityGuardFile
+from clients.models import Client
 
 User = get_user_model()
+
 
 
 
@@ -47,8 +49,8 @@ class AllSecurityGuardsSerializer(serializers.ModelSerializer):
 
 class OccupantSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ['user_id', 'email', 'full_name', ]
+        model = Client
+        fields = "__all__"
 
 class GuardTimeSerializer(serializers.ModelSerializer):
     occupant = OccupantSerializer(many=False)
