@@ -48,7 +48,7 @@ def add_non_system_user(request):
 
         user = User.objects.create(
             first_name=first_name,
-            last_name=first_name,
+            last_name=last_name,
             phone=phone,
         )
 

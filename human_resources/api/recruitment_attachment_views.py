@@ -93,8 +93,7 @@ def get_all_recruitment_attachments_view(request):
     if search_query:
         all_recruitment_attachments = all_recruitment_attachments.filter(
             Q(file_name__icontains=search_query) |
-            Q(recruitment_recruitment_id__icontains=search_query)
-
+            Q(recruitment__recruitment_id__icontains=search_query)
         )
 
 

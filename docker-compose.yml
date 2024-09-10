@@ -1,4 +1,4 @@
-version: "3.8"
+# version: "3.8"
 services:
 
   # Redis
@@ -25,10 +25,10 @@ services:
       - .:/tas_django
       - ./static_cdn:/var/lib/static_cdn
     ports:
-      - 80:80
+      - 8001:8001
     image: tas_app:django
     container_name: tas_django_app
-    command: python manage.py runserver 0.0.0.0:80
+    command: python manage.py runserver 0.0.0.0:8001
     depends_on:
       - db
     restart: unless-stopped

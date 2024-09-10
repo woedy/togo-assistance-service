@@ -74,6 +74,7 @@ class RecruitmentAttachmentDetailsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class AllRecruitmentAttachmentsSerializer(serializers.ModelSerializer):
+    recruitment = AllRecruitmentsSerializer(many=False)
     class Meta:
         model = RecruitmentAttachment
         fields = "__all__"

@@ -5,6 +5,7 @@ from billing.models import Billing, ClientPayment
 from bookings.api.serializers import AllBookingsSerializer
 from human_resources.models import HumanResource
 from security_team.models import PayPeriod, PayrollEntry
+from security_team.api.serializers import SecurityGuardDetailsSerializer
 
 User = get_user_model()
 
@@ -61,13 +62,14 @@ class AllPayPeriodsSerializer(serializers.ModelSerializer):
 
 
 class PayrollEntryDetailsSerializer(serializers.ModelSerializer):
-
+    guard = SecurityGuardDetailsSerializer(many=False)
     class Meta:
         model = PayrollEntry
         fields = "__all__"
 
 
 class AllPayrollEntrysSerializer(serializers.ModelSerializer):
+    guard = SecurityGuardDetailsSerializer(many=False)
     class Meta:
         model = PayrollEntry
         fields = "__all__"

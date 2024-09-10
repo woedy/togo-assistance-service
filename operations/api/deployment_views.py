@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.models import Booking, Deployment
-from operations.api.serializers import AllDeploymentsSerializer, DeploymentDetailsSerializer
+from operations.api.serializers import AllDeploymentsSerializer, DeploymentDetailsSerializer, OperationsDetailsSerializer
 from operations.models import Operation
 from post_sites.models import ClientPostSite
 from security_team.models import SecurityGuard
@@ -114,8 +114,14 @@ def get_all_deployments(request):
 
     if search_query:
         all_deployments = all_deployments.filter(
-            Q(booking_booking_id__icontains=search_query) |
-            Q(supervisor_operation_id__icontains=search_query)
+            Q(booking__booking_id__icontains=search_query) |
+            Q(supervisor__operations_id__icontains=search_query)
+
+        )
+
+    if filer_supervisor:
+        all_deployments = all_deployments.filter(
+            Q(supervisor__operations_id__icontains=filer_supervisor)
 
         )
 
@@ -146,6 +152,62 @@ def get_all_deployments(request):
 
     return Response(payload, status=status.HTTP_200_OK)
 
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_supervisors(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+    all_operations = Operation.objects.all().filter(user__is_archived=False).filter(role='Supervisor')
+
+
+    if search_query:
+        all_operations = all_operations.filter(
+            Q(user__email__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__username__icontains=search_query) |
+            Q(user__department__icontains=search_query) |
+            Q(user__gender__icontains=search_query) |
+            Q(user__dob__icontains=search_query) |
+            Q(user__marital_status__icontains=search_query) |
+            Q(user__phone__icontains=search_query) |
+            Q(user__country__icontains=search_query) |
+            Q(user__language__icontains=search_query) |
+            Q(user__location_name__icontains=search_query)
+        )
+
+
+    paginator = Paginator(all_operations, page_size)
+
+    try:
+        paginated_operations = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_operations = paginator.page(1)
+    except EmptyPage:
+        paginated_operations = paginator.page(paginator.num_pages)
+
+    all_operations_serializer = OperationsDetailsSerializer(paginated_operations, many=True)
+
+
+    data['supervisors'] = all_operations_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_operations.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_operations.next_page_number() if paginated_operations.has_next() else None,
+        'previous': paginated_operations.previous_page_number() if paginated_operations.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
 
 
 

@@ -432,6 +432,27 @@ def unique_log_id_generator(instance):
 
 
 
+
+
+def unique_meeting_id_generator(instance):
+    """
+    This is for a meeting_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    meeting_id = "Meet-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(N)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(meeting_id=meeting_id).exists()
+    if qs_exists:
+        return None
+    return meeting_id
+
+
+
+
+
 def unique_category_id_generator(instance):
     """
     This is for a category_id field

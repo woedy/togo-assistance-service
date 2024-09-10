@@ -29,15 +29,39 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST_USER = 'etornamasamoah@gmail.com'
+# EMAIL_HOST_PASSWORD = 'caiesdzxsarbcray'
+# EMAIL_PORT = 465
+# EMAIL_USE_SSL = True
+
+
+
+# Email backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'etornamasamoah@gmail.com'
-EMAIL_HOST_PASSWORD = 'caiesdzxsarbcray'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
+
+# SMTP settings
+EMAIL_HOST = 'smtp.hostinger.com'
+EMAIL_PORT = 587  # For TLS, use 465 for SSL
+EMAIL_USE_TLS = True  # Set to False if using SSL (port 465)
+EMAIL_HOST_USER = 'justus.adams@secdais.com'
+EMAIL_HOST_PASSWORD = 'Okpara@13?'
 DEFAULT_FROM_EMAIL = 'Togo Assistance Service <togoassistanceservice@gmail.com>'
 BASE_URL = '0.0.0.0:80'
 
+# EMAIL_HOST = 'ssl0.ovh.net'
+# EMAIL_PORT = 587  # or 465 for SSL/TLS
+# EMAIL_USE_TLS = True  # Use True for port 587
+# EMAIL_USE_SSL = False  # Use True for port 465; False for port 587
+# EMAIL_HOST_USER = 'contact@tasinter.com'  # Replace with your OVH email address
+# EMAIL_HOST_PASSWORD = 'TAStas123.' 
+# DEFAULT_FROM_EMAIL = 'Togo Assistance Service <togoassistanceservice@gmail.com>'
+# BASE_URL = '0.0.0.0:80'
+
+# Optional: If you want to use the Django Debug Toolbar to test email
+# EMAIL_USE_SSL = True
+# EMAIL_PORT = 465
 
 
 # Application definition
@@ -128,7 +152,6 @@ DATABASES = {
 }
 
 
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -139,7 +162,7 @@ DATABASES = {
 #         'PORT': 5432,
 #      }
 # }
-#
+
 
 CELERY_BROKER_URL = "redis://redis:6379"
 CELERY_RESULT_BACKEND = "redis://redis:6379"

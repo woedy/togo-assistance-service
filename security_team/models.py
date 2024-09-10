@@ -388,6 +388,9 @@ class PayrollEntry(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def calculate_gross_pay(self):
+        #####--------Print Over Time Error--------#######
+        print((self.overtime_hours * self.overtime_rate))
+        #####--------Print Over Time Error--------#######
         return self.basic_salary + (self.overtime_hours * self.overtime_rate)
     def calculate_net_pay(self):
         return self.gross_pay - self.deductions

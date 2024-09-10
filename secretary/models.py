@@ -7,7 +7,7 @@ from django.db.models.signals import post_save, pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_secretary_id_generator, unique_log_id_generator
+from tas_project.utils import unique_meeting_id_generator, unique_secretary_id_generator, unique_log_id_generator
 
 User = get_user_model()
 
@@ -112,4 +112,60 @@ def pre_save_log_id_receiver(sender, instance, *args, **kwargs):
         instance.log_id = unique_log_id_generator(instance)
 
 pre_save.connect(pre_save_log_id_receiver, sender=LogBook)
+
+
+MEETING_STATUS_CHOICES = (
+    ('Pending', 'Pending'),
+    ('Broadcast', 'Broadcast'),
+    ('Ongoing', 'Ongoing'),
+    ('Complete', 'Complete'),
+
+)
+
+
+
+
+class Meeting(models.Model):
+    meeting_id = models.CharField(max_length=200, null=True, blank=True)
+    title = models.CharField(max_length=5000, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    location = models.CharField(max_length=5000, blank=True, null=True)
+
+    attendees = models.ManyToManyField(User, related_name='attendees', blank=True)
+    meeting_attendees = models.ManyToManyField(User, related_name='meeting_attendees', blank=True)
+
+    status = models.CharField(choices=MEETING_STATUS_CHOICES, null=True, blank=True, max_length=200)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+def pre_save_meeting_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.meeting_id:
+        instance.meeting_id = unique_meeting_id_generator(instance)
+
+pre_save.connect(pre_save_meeting_id_receiver, sender=Meeting)
+
+
+
+class MeetingReminder(models.Model):
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='meeting_reminders')
+    subject = models.CharField(max_length=5000, null=True, blank=True)
+    note = models.TextField(null=True, blank=True)
+
+    remninder_time = models.DateTimeField(null=True, blank=True)
+    sent = models.BooleanField(default=False)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 

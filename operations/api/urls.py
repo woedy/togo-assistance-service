@@ -2,7 +2,7 @@ from django.urls import path
 from human_resources.api.views import get_hr_dashboard
 from operations.api.attendance_views import clock_in_guard, get_all_attendances, get_attendance_details_view, \
     archive_attendance, delete_attendance, unarchive_attendance, get_all_archived_attendances_view, clock_out_guard
-from operations.api.deployment_views import assign_supervisor, get_all_deployments, get_deployment_details_view, \
+from operations.api.deployment_views import assign_supervisor, get_all_deployments, get_all_supervisors, get_deployment_details_view, \
     archive_deployment, delete_deployment, unarchive_deployment, get_all_archived_deployments_view, deploy_team
 from operations.api.views import get_operations_dashboard, update_role
 
@@ -15,6 +15,8 @@ urlpatterns = [
     path('assign-supervisor/', assign_supervisor, name="assign_supervisor"),
     path('deploy-team/', deploy_team, name="deploy_team"),
     path('get-all-deployments/', get_all_deployments, name="get_all_deployments"),
+
+    path('get-all-supervisors/', get_all_supervisors, name="get_all_supervisors"),
     path('get-deployment-details/', get_deployment_details_view, name="get_deployment_details_view"),
     path('archive-deployment/', archive_deployment, name="archive_deployment"),
     path('delete-deployment/', delete_deployment, name="delete_deployment"),

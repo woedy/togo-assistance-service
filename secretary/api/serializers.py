@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from accounts.api.serializers import ListAllUsersSerializer
 from clients.models import Client
-from secretary.models import Secretary, LogBook
+from secretary.models import Meeting, Secretary, LogBook
 from security_team.models import FileManagement
 
 User = get_user_model()
@@ -44,8 +45,35 @@ class AllLogBookSerializer(serializers.ModelSerializer):
 
 
 
+
+
+
 class AllFilesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileManagement
         fields = "__all__"
+
+
+
+
+class AllMeetingsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Meeting
+        fields = "__all__"
+
+
+
+
+class MeetingDetailsSerializer(serializers.ModelSerializer):
+    attendees = ListAllUsersSerializer(many=True)
+
+    meeting_attendees = ListAllUsersSerializer(many=True)
+
+
+    class Meta:
+        model = Meeting
+        fields = "__all__"
+
+

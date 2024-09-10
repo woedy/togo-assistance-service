@@ -29,8 +29,7 @@ urlpatterns = [
     path('archive-staff-pay-period/', archive_staff_pay_period, name="archive_staff_pay_period"),
     path('unarchive-staff-pay-period/', unarchive_staff_pay_period, name="unarchive_staff_pay_period"),
     path('delete-staff-pay-period/', delete_staff_pay_period, name="delete_staff_pay_period"),
-    path('get-all-archived-staff-pay-periods/', get_all_archived_staff_pay_period_view,
-         name="get_all_archived_staff_pay_period_view"),
+    path('get-all-archived-staff-pay-periods/', get_all_archived_staff_pay_period_view,name="get_all_archived_staff_pay_period_view"),
 
     ### Staff Payroll Entry
     path('add-staff-payroll-entry/', add_staff_payroll_entry, name="add_staff_payroll_entry"),
@@ -40,8 +39,7 @@ urlpatterns = [
     path('archive-staff-payroll-entry/', archive_staff_payroll_entry, name="archive_staff_payroll_entry"),
     path('unarchive-staff-payroll-entry/', unarchive_staff_payroll_entry, name="unarchive_staff_payroll_entry"),
     path('delete-staff-payroll-entry/', delete_staff_payroll_entry, name="delete_staff_payroll_entry"),
-    path('get-all-archived-staff-payroll-entries/', get_all_archived_staff_payroll_entry_view,
-         name="get_all_archived_staff_pay_period_view"),
+    path('get-all-archived-staff-payroll-entries/', get_all_archived_staff_payroll_entry_view,name="get_all_archived_staff_pay_period_view"),
 
     path('change-employment-status/', change_employment_status, name="change_employment_status"),
 
