@@ -106,6 +106,8 @@ def get_all_deployments(request):
     errors = {}
 
     search_query = request.query_params.get('search', '')
+    filter_supervisor = request.query_params.get('search', '')
+
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
@@ -119,9 +121,9 @@ def get_all_deployments(request):
 
         )
 
-    if filer_supervisor:
+    if filter_supervisor:
         all_deployments = all_deployments.filter(
-            Q(supervisor__operations_id__icontains=filer_supervisor)
+            supervisor__operations_id__icontains=filter_supervisor
 
         )
 

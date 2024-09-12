@@ -442,3 +442,32 @@ def pre_save_file_id_receiver(sender, instance, *args, **kwargs):
         instance.file_id = unique_file_id_generator(instance)
 
 pre_save.connect(pre_save_file_id_receiver, sender=FileManagement)
+
+DEPARTMENT = (
+    ('SECRETARY', 'SECRETARY'),
+    ('HUMAN RESOURCES', 'HUMAN RESOURCES'),
+    ('ADMIN', 'ADMIN'),
+('LOGISTICS', 'LOGISTICS'),
+('BILLING', 'BILLING'),
+('OPERATIONS', 'OPERATIONS'),
+('COMMERCIAL', 'COMMERCIAL'),
+('CLIENT', 'CLIENT'),
+('GUARD', 'GUARD'),
+('LEGAL', 'LEGAL'),
+
+)
+
+
+class FileForwardingList(models.Model):
+    file = models.ForeignKey(FileManagement, on_delete=models.CASCADE, related_name='file_forwarding_list')
+
+    department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+

@@ -1,7 +1,8 @@
 from django.urls import path
 
-from secretary.api.file_management_views import add_file_view, get_all_files, get_all_archive_files, delete_file, \
+from secretary.api.file_management_views import add_file_view, forward_file_to_department, get_all_files, get_all_archive_files, delete_file, \
     archive_file, unarchive_file
+from secretary.api.letter_views import add_letter, archive_letter, delete_letter, edit_letter, get_all_archived_letters_view, get_all_letters_view, get_letter_details_view, unarchive_letter
 from secretary.api.meeting_views import add_attendees, add_meeting, add_meeting_attendees, add_meeting_reminder, archive_meeting, broadcast_meeting, delete_meeting, edit_meeting, get_all_archived_meetings_view, get_all_meetings_view, get_meeting_details_view, remove_attendees, remove_meeting_attendees, remove_meeting_reminder, set_meeting_complete, set_meeting_ongoing, unarchive_meeting
 from secretary.api.views import get_secretary_dashboard, add_log_view, get_all_logs_view, \
     delete_log, unarchive_log, archive_log, get_all_archived_log_view, edit_log_view
@@ -25,6 +26,10 @@ urlpatterns = [
     path('archive-file/', archive_file, name="archive_file"),
     path('unarchive-file/', unarchive_file, name="unarchive_file"),
     path('delete-file/', delete_file, name="delete_file"),
+
+        path('forward-file-to-department/', forward_file_to_department, name="forward_file_to_department"),
+
+
 
 
         path('add-meeting/', add_meeting, name="add_meeting"),
@@ -51,4 +56,21 @@ urlpatterns = [
 
         path('add-meeting-reminder/', add_meeting_reminder, name="add_meeting_reminder"),
         path('remove-meeting-reminder/', remove_meeting_reminder, name="remove_meeting_reminder"),
+
+
+
+
+
+
+        path('add-letter/', add_letter, name="add_letter"),
+    path('edit-letter/', edit_letter, name="edit_letter"),
+    path('get-all-letters/', get_all_letters_view, name="get_all_letters_view"),
+    path('get-letter-details/', get_letter_details_view, name="get_letter_details_view"),
+    path('archive-letter/', archive_letter, name="archive_letter"),
+    path('delete-letter/', delete_letter, name="delete_letter"),
+    path('unarchive-letter/', unarchive_letter, name="unarchive_letter"),
+    path('get-all-archived-letters/', get_all_archived_letters_view, name="get_all_archived_letters_view"),
+
+
+
 ]

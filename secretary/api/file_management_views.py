@@ -14,7 +14,7 @@ from legal.api.serializers import AllContractsSerializer
 from legal.models import Contract, Legal
 from notifications.models import Notification
 from secretary.api.serializers import AllFilesSerializer
-from security_team.models import FileManagement
+from security_team.models import FileForwardingList, FileManagement
 
 
 @api_view(['POST', ])
@@ -80,6 +80,8 @@ def get_all_files(request):
     errors = {}
 
     search_query = request.query_params.get('search', '')
+    file_id = request.query_params.get('file_id', '')
+
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
@@ -90,6 +92,13 @@ def get_all_files(request):
         all_files = all_files.filter(
             Q(file_id__icontains=search_query) |
             Q(file_name__icontains=search_query)
+        )
+
+
+
+    if file_id:
+        all_files = all_files.filter(
+            file_id=file_id
         )
 
 
@@ -269,5 +278,66 @@ def get_all_archive_files(request):
     payload['data'] = data
 
     return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def forward_file_to_department(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        file_id = request.data.get('file_id', "")
+        department = request.data.get('department', "")
+
+
+        if not file_id:
+            errors['file_id'] = ['File ID is required.']
+
+        if not department:
+            errors['department'] = ['Department is required.']
+
+        try:
+            file = FileManagement.objects.get(file_id=file_id)
+        except:
+            errors['file_id'] = ['File does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            forwarding = FileForwardingList.objects.get(file=file, department=department)
+            pass
+        except:
+            new_forwarding = FileForwardingList.objects.create(
+                file=file,
+                department=department
+                )
+
+            notification = Notification.objects.create(
+                english_title='Forwarded File',
+                french_title='Fichier transféré',
+                english_subject="A new file has been forwarded to you department. Check and give it the necessary attention.",
+                french_subject="Un nouveau dossier a été transmis à votre service. Vérifiez et accordez-lui toute l’attention nécessaire.",
+                department=department
+            )
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
 
 

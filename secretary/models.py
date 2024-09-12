@@ -7,7 +7,7 @@ from django.db.models.signals import post_save, pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_meeting_id_generator, unique_secretary_id_generator, unique_log_id_generator
+from tas_project.utils import unique_letter_id_generator, unique_meeting_id_generator, unique_secretary_id_generator, unique_log_id_generator
 
 User = get_user_model()
 
@@ -166,6 +166,64 @@ class MeetingReminder(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+def upload_letter_file_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "letters/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+
+
+
+LETTER_STATUS_CHOICES = (
+       ('Pending', 'Pending'),
+    ('Sent', 'Sent'),
+    ('Received', 'Received'),
+    ('Not Sent', 'Not Sent')
+)
+
+
+
+
+
+
+
+class Letter(models.Model):
+    letter_id = models.CharField(max_length=200, null=True, blank=True)
+
+    letter_type = models.CharField(max_length=1000, null=True, blank=True)
+    date_sent = models.DateTimeField(null=True, blank=True)
+    date_received = models.DateTimeField(null=True, blank=True)
+
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='letter_sender')
+    receiver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='letter_receiver')
+
+    
+    status = models.CharField(choices=LETTER_STATUS_CHOICES, null=True, blank=True, default='Pending', max_length=200)
+
+
+    letter_file = models.FileField(upload_to=upload_letter_file_path, null=True, blank=True)
+
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+def pre_save_letter_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.letter_id:
+        instance.letter_id = unique_letter_id_generator(instance)
+
+pre_save.connect(pre_save_letter_id_receiver, sender=Letter)
 
 
 

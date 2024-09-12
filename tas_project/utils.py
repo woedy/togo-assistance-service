@@ -698,3 +698,20 @@ def unique_file_id_generator(instance):
     if qs_exists:
         return None
     return file_id
+
+
+
+def unique_letter_id_generator(instance):
+    """
+    This is for a letter ID field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    letter_id = "LET-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(TER)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(letter_id=letter_id).exists()
+    if qs_exists:
+        return None
+    return letter_id
