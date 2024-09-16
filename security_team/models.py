@@ -8,7 +8,7 @@ from django.db.models.signals import post_save, pre_save
 
 from clients.models import Client
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_guard_id_generator, unique_payroll_id_generator, unique_file_id_generator, \
+from tas_project.utils import unique_guard_id_generator, unique_leave_request_id_generator, unique_payroll_id_generator, unique_file_id_generator, \
     unique_guard_file_id_generator
 
 User = get_user_model()
@@ -420,6 +420,18 @@ def upload_file_path(instance, filename):
         final_filename=final_filename
     )
 
+DEPARTMENT = (
+    ('SECRETARY', 'SECRETARY'),
+    ('HUMAN RESOURCES', 'HUMAN RESOURCES'),
+    ('ADMIN', 'ADMIN'),
+    ('LOGISTICS', 'LOGISTICS'),
+    ('BILLING', 'BILLING'),
+    ('OPERATIONS', 'OPERATIONS'),
+    ('COMMERCIAL', 'COMMERCIAL'),
+    ('CLIENT', 'CLIENT'),
+    ('GUARD', 'GUARD'),
+    ('LEGAL', 'LEGAL'),
+)
 
 class FileManagement(models.Model):
     file_id = models.CharField(max_length=200, null=True, blank=True)
@@ -429,6 +441,7 @@ class FileManagement(models.Model):
     note = models.TextField(null=True, blank=True)
 
     file = models.FileField(upload_to=upload_file_path, null=True, blank=True)
+    department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
@@ -471,3 +484,34 @@ class FileForwardingList(models.Model):
 
 
 
+class LeaveRequest(models.Model):
+    LEAVE_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+    leave_request_id = models.CharField(max_length=200, null=True, blank=True)
+
+    guard = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE, related_name='leave_gaurd')
+    rotation = models.ForeignKey(SecurityGuard, on_delete=models.CASCADE, related_name='leave_rotation')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    reason = models.TextField(null=True, blank=True)
+    
+    is_archived = models.BooleanField(default=False)
+
+    status = models.CharField(max_length=10, choices=LEAVE_STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.guard.full_name} - {self.start_date} to {self.end_date}"
+    
+
+
+
+def pre_save_leave_request_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.leave_request_id:
+        instance.leave_request_id = unique_leave_request_id_generator(instance)
+
+pre_save.connect(pre_save_leave_request_id_receiver, sender=LeaveRequest)

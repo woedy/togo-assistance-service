@@ -2,8 +2,8 @@ from django.urls import path
 
 from bookings.api.assign_site_views import assign_guard, unassign_guard, re_assign_guard, get_all_assigned_guards
 from bookings.api.booking_email_views import send_booking_email, get_all_booking_emails_view
-from bookings.api.field_report_views import add_field_report, edit_field_report, get_all_field_reports_view, \
-    get_field_report_details_view, archive_field_report, delete_field_report, unarchive_field_report, \
+from bookings.api.field_report_views import add_field_report, change_field_report_status, edit_field_report, get_all_field_reports_view, \
+    get_field_report_details_view, archive_field_report, delete_field_report, send_field_report_to_client, unarchive_field_report, \
     get_all_archived_field_reports_view
 from bookings.api.post_order_views import add_post_order, get_all_post_orders_view, edit_post_order, \
     get_post_order_details_view, archive_post_order, unarchive_post_order, delete_post_order, \
@@ -71,12 +71,14 @@ urlpatterns = [
 
     path('add-field_report/', add_field_report, name="add_field_report"),
     path('edit-field-report/', edit_field_report, name="edit_field_report"),
+    path('change-field-report-status/', change_field_report_status, name="change_field_report_status"),
     path('get-all-field-reports/', get_all_field_reports_view, name="get_all_field_reports_view"),
     path('get-field-report-details/', get_field_report_details_view, name="get_field_report_details_view"),
     path('archive-field-report/', archive_field_report, name="archive_field_report"),
     path('delete-field-report/', delete_field_report, name="delete_field_report"),
     path('unarchive-field-report/', unarchive_field_report, name="unarchive_field_report"),
     path('get-all-archived-field-reports/', get_all_archived_field_reports_view, name="get_all_archived_field_reports_view"),
+    path('send-field-report/', send_field_report_to_client, name="send_field_report_to_client"),
 
 
 

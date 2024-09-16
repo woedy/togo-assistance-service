@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from security_team.models import SecurityGuard, GuardAvailability, TimeSlot, SecurityGuardFile
+from security_team.models import LeaveRequest, SecurityGuard, GuardAvailability, TimeSlot, SecurityGuardFile
 from clients.models import Client
 
 User = get_user_model()
@@ -71,3 +71,24 @@ class GuardAvailabilitySerializer(serializers.ModelSerializer):
     class Meta:
         model = GuardAvailability
         fields = ['id', 'slot_date', 'state', 'availability_time_slots']
+
+
+
+
+
+
+class AllLeaveRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeaveRequest
+        fields = "__all__"
+
+
+
+class LeaveRequestDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeaveRequest
+        fields = "__all__"
+
+

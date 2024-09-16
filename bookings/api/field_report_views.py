@@ -9,6 +9,10 @@ from accounts.api.custom_jwt import CustomJWTAuthentication
 from bookings.api.serializers import AllFieldReportsSerializer, FieldReportDetailsSerializer
 from bookings.models import FieldReport, Booking
 from notifications.models import Notification
+from django.template.loader import get_template
+from django.core.mail import send_mail
+
+from django.conf import settings
 
 
 @api_view(['POST', ])
@@ -39,32 +43,27 @@ def add_field_report(request):
         except:
             errors['booking_id'] = ['Booking does not exist.']
 
-        try:
-            report = FieldReport.objects.get(booking=booking)
-            errors['booking_id'] = ['Field Report already exist. Update it']
-        except:
 
-            _report = FieldReport.objects.create(
-                booking=booking,
-                title=title,
-                report=report,
-
-            )
-
-            notification = Notification.objects.create(
-                english_title='Field Report Added',
-                french_title='Rapport de terrain ajouté',
-                english_subject="A new field report for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
-                french_subject="Un nouveau rapport de terrain pour " + booking.client.company_name + " a été ajouté. Veuillez vérifier et lui accorder l'attention nécessaire.",
-                department="COMMERCIAL"
-            )
 
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
+        _report = FieldReport.objects.create(
+            booking=booking,
+            title=title,
+            report=report,
+        )
+        notification = Notification.objects.create(
+            english_title='Field Report Added',
+            french_title='Rapport de terrain ajouté',
+            english_subject="A new field report for " + booking.client.company_name + " has been added. Check and give it the necessary attention.",
+            french_subject="Un nouveau rapport de terrain pour " + booking.client.company_name + " a été ajouté. Veuillez vérifier et lui accorder l'attention nécessaire.",
+            department="COMMERCIAL"
+        )
 
+        data['field_report_id'] = _report.field_report_id
 
 
         payload['message'] = "Successful"
@@ -72,6 +71,51 @@ def add_field_report(request):
 
     return Response(payload)
 
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def change_field_report_status(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        field_report_id = request.data.get('field_report_id', "")
+        status = request.data.get('status', "")
+
+
+        if not field_report_id:
+            errors['field_report_id'] = ['FieldReport ID is required.']
+
+ 
+        if not status:
+            errors['status'] = ['Status is required.']
+
+
+        try:
+            field_report = FieldReport.objects.get(field_report_id=field_report_id)
+        except:
+            errors['field_report_id'] = ['FieldReport does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        field_report.status = status
+        field_report.save()
+
+
+        data["field_report_id"] = field_report.field_report_id
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
 
 
 
@@ -88,7 +132,7 @@ def get_all_field_reports_view(request):
     page_number = request.query_params.get('page', 1)
     page_size = 10
 
-    all_field_reports = FieldReport.objects.all().filter(is_archived=False)
+    all_field_reports = FieldReport.objects.all().filter(is_archived=False).order_by('-created_at')
 
 
     if search_query:
@@ -184,11 +228,15 @@ def edit_field_report(request):
     errors = {}
 
     if request.method == 'POST':
-        booking_id = request.data.get('booking_id', "")
+        field_report_id = request.data.get('field_report_id', "")
 
         title = request.data.get('title', "")
         report = request.data.get('report', "")
 
+
+
+        if not field_report_id:
+            errors['field_report_id'] = ['Field Report ID is required.']
 
         if not title:
             errors['title'] = ['Title is required.']
@@ -198,14 +246,9 @@ def edit_field_report(request):
 
 
         try:
-            booking = Booking.objects.get(booking_id=booking_id)
+            field_report = FieldReport.objects.get(field_report_id=field_report_id)
         except:
-            errors['booking'] = ['Bookingdoes not exist.']
-
-        try:
-            field_report = FieldReport.objects.get(booking=booking)
-        except:
-            errors['booking'] = ['Field report does not exist.']
+            errors['field_report'] = ['Field report does not exist.']
 
         if errors:
             payload['message'] = "Errors"
@@ -219,8 +262,8 @@ def edit_field_report(request):
         notification = Notification.objects.create(
             english_title='Field Report Edited',
             french_title='Rapport de terrain modifié',
-            english_subject="Field report for " + booking.client.company_name + " has been edited. Check and give it the necessary attention.",
-            french_subject="Le rapport de terrain pour " + booking.client.company_name + " a été modifié. Veuillez vérifier et lui accorder l'attention nécessaire.",
+            english_subject="Field report for " + field_report.booking.client.company_name + " has been edited. Check and give it the necessary attention.",
+            french_subject="Le rapport de terrain pour " + field_report.booking.client.company_name + " a été modifié. Veuillez vérifier et lui accorder l'attention nécessaire.",
             department="COMMERCIAL"
         )
 
@@ -241,21 +284,17 @@ def archive_field_report(request):
     errors = {}
 
     if request.method == 'POST':
-        booking_id = request.data.get('booking_id', "")
+        field_report_id = request.data.get('field_report_id', "")
 
-        if not booking_id:
-            errors['booking_id'] = ['Booking ID is required.']
+        if not field_report_id:
+            errors['field_report_id'] = ['field Report ID is required.']
 
 
+     
         try:
-            booking = Booking.objects.get(booking_id=booking_id)
+            field_report = FieldReport.objects.get(field_report_id=field_report_id)
         except:
-            errors['booking'] = ['Bookingdoes not exist.']
-
-        try:
-            field_report = FieldReport.objects.get(booking=booking)
-        except:
-            errors['booking'] = ['Field report does not exist.']
+            errors['field_report_id'] = ['Field report does not exist.']
 
         if errors:
             payload['message'] = "Errors"
@@ -272,8 +311,6 @@ def archive_field_report(request):
     return Response(payload)
 
 
-
-
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
@@ -283,21 +320,17 @@ def unarchive_field_report(request):
     errors = {}
 
     if request.method == 'POST':
-        booking_id = request.data.get('booking_id', "")
+        field_report_id = request.data.get('field_report_id', "")
 
-        if not booking_id:
-            errors['booking_id'] = ['Booking ID is required.']
+        if not field_report_id:
+            errors['field_report_id'] = ['field Report ID is required.']
 
 
+     
         try:
-            booking = Booking.objects.get(booking_id=booking_id)
+            field_report = FieldReport.objects.get(field_report_id=field_report_id)
         except:
-            errors['booking'] = ['Bookingdoes not exist.']
-
-        try:
-            field_report = FieldReport.objects.get(booking=booking)
-        except:
-            errors['booking'] = ['Field report does not exist.']
+            errors['field_report_id'] = ['Field report does not exist.']
 
         if errors:
             payload['message'] = "Errors"
@@ -324,21 +357,17 @@ def delete_field_report(request):
     errors = {}
 
     if request.method == 'POST':
-        booking_id = request.data.get('booking_id', "")
+        field_report_id = request.data.get('field_report_id', "")
 
-        if not booking_id:
-            errors['booking_id'] = ['Booking ID is required.']
+        if not field_report_id:
+            errors['field_report_id'] = ['field Report ID is required.']
 
 
+     
         try:
-            booking = Booking.objects.get(booking_id=booking_id)
+            field_report = FieldReport.objects.get(field_report_id=field_report_id)
         except:
-            errors['booking'] = ['Bookingdoes not exist.']
-
-        try:
-            field_report = FieldReport.objects.get(booking=booking)
-        except:
-            errors['booking'] = ['Field report does not exist.']
+            errors['field_report_id'] = ['Field report does not exist.']
 
         if errors:
             payload['message'] = "Errors"
@@ -352,8 +381,6 @@ def delete_field_report(request):
         payload['data'] = data
 
     return Response(payload)
-
-
 
 
 
@@ -412,4 +439,77 @@ def get_all_archived_field_reports_view(request):
     return Response(payload, status=status.HTTP_200_OK)
 
 
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def send_field_report_to_client(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        field_report_id = request.data.get('field_report_id', "")
+
+
+        if not field_report_id:
+            errors['field_report_id'] = ['Field Report ID is required.']
+
+        try:
+            field_report = FieldReport.objects.get(field_report_id=field_report_id)
+        except:
+            errors['field_report_id'] = ['Field Report does not exist.']
+    
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+        field_report.status = "Sent"
+        field_report.save()
+
+
+
+
+
+
+        context = {
+            'booking_id': field_report.booking.booking_id,
+            'title': field_report.title,
+            'report': field_report.report,
+        }
+
+        txt_ = get_template("commercial/emails/field_report.html").render(context)
+        html_ = get_template("commercial/emails/field_report.txt").render(context)
+
+        subject = 'FIELD REPORT'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [field_report.booking.client.user.email]
+
+        # # Use Celery chain to execute tasks in sequence
+        # email_chain = chain(
+        #     send_generic_email.si(subject, txt_, from_email, recipient_list, html_),
+        # )
+        # # Execute the Celery chain asynchronously
+        # email_chain.apply_async()
+
+        send_mail(
+            subject,
+            txt_,
+            from_email,
+            recipient_list,
+            html_message=html_,
+            fail_silently=False,
+        )
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
 

@@ -7,7 +7,7 @@ from operations.models import Operation
 from post_sites.models import ClientPostSite
 from security_team.models import SecurityGuard
 from tas_project.utils import unique_booking_id_generator, unique_estimate_id_generator, unique_deployment_id_generator, \
-    unique_attendance_id_generator
+    unique_attendance_id_generator, unique_field_report_id_generator
 
 STATUS_CHOICE = (
 
@@ -67,6 +67,12 @@ class Booking(models.Model):
     booking_approved_at = models.DateTimeField(null=True, blank=True)
     booking_declined_at = models.DateTimeField(null=True, blank=True)
     booking_cancelled_at = models.DateTimeField(null=True, blank=True)
+
+
+    date_of_visit = models.DateTimeField(null=True, blank=True)
+    vacation_type = models.CharField(null=True, blank=True, max_length=5000)
+
+    investment_date = models.DateTimeField(null=True, blank=True)
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
@@ -139,22 +145,37 @@ EST_STATUS_CHOICE = (
 )
 
 class Estimate(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="post_site_tasks")
+    booking = models.ForeignKey('Booking', on_delete=models.CASCADE, related_name="post_site_tasks")
     estimate_id = models.CharField(max_length=200, null=True, blank=True)
     item = models.CharField(max_length=200, null=True, blank=True)
     quantity = models.IntegerField(default=0, null=True, blank=True)
-    tax = models.DecimalField(max_digits=30, decimal_places=15, null=True, blank=True)
+    tax = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Tax rate as a percentage (e.g., 20 for 20%)")
 
     status = models.CharField(max_length=255, default="Pending", null=True, blank=True, choices=EST_STATUS_CHOICE)
-    amount = models.CharField(max_length=200,  null=True, blank=True)
+    amount = models.DecimalField(max_digits=30, decimal_places=2, null=True, blank=True, help_text="Amount per item")
     expires_on = models.DateTimeField(null=True, blank=True)
 
-    #estimator = models.ForeignKey(Commercial, on_delete=models.SET_NULL, related_name="estimate_commercial")
+    accepted = models.BooleanField(default=False)
+    paid = models.BooleanField(default=False)
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_ht(self):
+        return self.quantity * (self.amount or 0)
+
+    @property
+    def total_tva(self):
+        return (self.total_ht * (self.tax or 0) / 100) if self.tax else 0
+
+    @property
+    def total_ttc(self):
+        return self.total_ht + self.total_tva
+    
+
 
 
 def pre_save_estimate_id_receiver(sender, instance, *args, **kwargs):
@@ -162,6 +183,16 @@ def pre_save_estimate_id_receiver(sender, instance, *args, **kwargs):
         instance.estimate_id = unique_estimate_id_generator(instance)
 
 pre_save.connect(pre_save_estimate_id_receiver, sender=Estimate)
+
+
+
+
+class TaxSetting(models.Model):
+
+    tax = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Tax rate as a percentage (e.g., 20 for 20%)")
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 
@@ -232,20 +263,37 @@ pre_save.connect(pre_save_attendance_id_receiver, sender=DeploymentAttendance)
 
 
 
-
+FIELD_REPORT_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
 
 class FieldReport(models.Model):
+    field_report_id = models.CharField(max_length=200, null=True, blank=True)
+
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='field_reports')
 
     title = models.CharField(max_length=1000, null=True, blank=True)
     report = models.TextField(null=True, blank=True)
 
     is_archived = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=FIELD_REPORT_STATUS_CHOICES, default='Pending')
 
+    sent = models.BooleanField(default=False)
+    accepted = models.BooleanField(default=False)
 
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_field_report_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.field_report_id:
+        instance.field_report_id = unique_field_report_id_generator(instance)
+
+pre_save.connect(pre_save_field_report_id_receiver, sender=FieldReport)
+
 
 
 

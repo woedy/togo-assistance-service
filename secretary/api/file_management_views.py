@@ -30,6 +30,7 @@ def add_file_view(request):
         description = request.data.get('description', "")
         note = request.data.get('note', "")
         file = request.data.get('file', "")
+        department = request.data.get('department', "")
 
 
         if not file_name:
@@ -37,6 +38,9 @@ def add_file_view(request):
 
         if not file:
             errors['file'] = ['File required.']
+
+        if not department:
+            errors['department'] = ['Department required.']
 
         if errors:
             payload['message'] = "Errors"
@@ -48,6 +52,7 @@ def add_file_view(request):
             file_name=file_name,
             description=description,
             note=note,
+            department=department
         )
 
         notification = Notification.objects.create(
@@ -57,6 +62,7 @@ def add_file_view(request):
             french_subject="Un nouveau fichier a été ajouté. Veuillez le vérifier et lui accorder l'attention nécessaire.",
             department="SECRETARY"
         )
+
 
         data['file_id'] = new_file.file_id
 

@@ -72,7 +72,9 @@ def add_client_request_basic_info_view(request):
         equipment_requirements = request.data.get('equipment_requirements', "")
         special_instruction = request.data.get('special_instruction', "")
         contact_duration = request.data.get('contact_duration', "")
-
+        date_of_visit = request.data.get('date_of_visit', "")
+        vacation_type = request.data.get('vacation_type', "")
+        investment_date = request.data.get('investment_date', "")
 
         if not client_id:
             errors['client_id'] = ['Client ID is required.']
@@ -99,6 +101,10 @@ def add_client_request_basic_info_view(request):
             equipment_requirements=equipment_requirements,
             special_instruction=special_instruction,
             contact_duration=contact_duration,
+            date_of_visit=date_of_visit,
+            vacation_type=vacation_type,
+            investment_date=investment_date
+
         )
 
         data['booking_id'] = new_client_request.booking_id

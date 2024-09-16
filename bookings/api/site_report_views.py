@@ -27,6 +27,7 @@ def add_site_report(request):
         site_id = request.data.get('site_id', "")
         subject = request.data.get('subject', "")
         description = request.data.get('description', "")
+        sender_id = request.data.get('sender_id', "")
 
 
         if not site_id:
@@ -38,10 +39,21 @@ def add_site_report(request):
         if not description:
             errors['description'] = ['Description is required.']
 
+        if not sender_id:
+            errors['sender_id'] = ['Sender user id is required.']
+
+
         try:
             post_site = ClientPostSite.objects.get(site_id=site_id)
         except:
             errors['site_id'] = ['Post Site does not exist.']
+
+
+
+        try:
+            sender = User.objects.get(user_id=sender_id)
+        except:
+            errors['sender_id'] = ['User Does not exist does not exist.']
 
 
         if errors:
@@ -54,6 +66,7 @@ def add_site_report(request):
             post_site=post_site,
             subject=subject,
             description=description,
+            sender=sender
         )
 
         data["site_report_id"] = site_report.site_report_id
@@ -163,6 +176,7 @@ def edit_site_report(request):
         site_id = request.data.get('site_id', "")
         subject = request.data.get('subject', "")
         description = request.data.get('description', "")
+        sender_id = request.data.get('sender_id', "")
 
         if not site_report_id:
             errors['site_report_id'] = ['Site Report ID is required.']
@@ -188,6 +202,15 @@ def edit_site_report(request):
         except:
             errors['site_report_id'] = ['Site Report does not exist.']
 
+
+
+
+        try:
+            sender = User.objects.get(user_id=sender_id)
+        except:
+            errors['sender_id'] = ['User Does not exist does not exist.']
+
+
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
@@ -196,6 +219,8 @@ def edit_site_report(request):
         site_report.subject = subject
         site_report.description = description
         site_report.post_site = post_site
+        site_report.sender = sender
+
         site_report.save()
 
 

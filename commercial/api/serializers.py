@@ -37,9 +37,32 @@ class CommercialDetailsSerializer(serializers.ModelSerializer):
 
 class AllEstimatesSerializer(serializers.ModelSerializer):
     booking = AllBookingsSerializer(many=False)
+    total_ht = serializers.SerializerMethodField()
+    total_tva = serializers.SerializerMethodField()
+    total_ttc = serializers.SerializerMethodField()
+
+
+
+
     class Meta:
         model = Estimate
         fields = "__all__"
 
+    def get_total_ht(self, obj):
+        total_ht = obj.total_ht
+        return total_ht if total_ht else None
+
+
+
+    def get_total_tva(self, obj):
+        total_tva = obj.total_tva 
+        return total_tva if total_tva else None
+
+
+
+
+    def get_total_ttc(self, obj):
+        total_ttc = obj.total_ttc 
+        return total_ttc if total_ttc else None
 
 

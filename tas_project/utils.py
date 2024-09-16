@@ -684,6 +684,25 @@ def unique_site_report_id_generator(instance):
 
 
 
+
+
+def unique_field_report_id_generator(instance):
+    """
+    This is for a field_report_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    field_report_id = "field-rep-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-r"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(field_report_id=field_report_id).exists()
+    if qs_exists:
+        return None
+    return field_report_id
+
+
+
 def unique_file_id_generator(instance):
     """
     This is for a file_id field
@@ -698,6 +717,23 @@ def unique_file_id_generator(instance):
     if qs_exists:
         return None
     return file_id
+
+
+
+def unique_leave_request_id_generator(instance):
+    """
+    This is for a leave_request_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    leave_request_id = "LR-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-rq"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(leave_request_id=leave_request_id).exists()
+    if qs_exists:
+        return None
+    return leave_request_id
 
 
 

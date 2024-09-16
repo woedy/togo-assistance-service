@@ -1,5 +1,6 @@
 import os
 import random
+from django.contrib.auth import get_user_model
 
 from django.db import models
 from django.db.models.signals import pre_save
@@ -9,6 +10,7 @@ from security_team.models import SecurityGuard
 from tas_project.utils import unique_site_id_generator, unique_zone_id_generator, unique_post_order_id_generator, \
     unique_site_report_id_generator
 
+User = get_user_model()
 
 class ClientZone(models.Model):
     zone_id = models.CharField(max_length=200, null=True, blank=True)
@@ -144,6 +146,7 @@ class SiteReport(models.Model):
     post_site = models.ForeignKey(ClientPostSite, on_delete=models.CASCADE, related_name="site_reports")
     subject = models.CharField(max_length=1000, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='report_sender')
 
     is_archived = models.BooleanField(default=False)
 
