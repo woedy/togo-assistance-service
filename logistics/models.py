@@ -4,9 +4,7 @@ from django.db.models.signals import pre_save
 
 from communications.models import PrivateChatRoom
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_supplier_id_generator, unique_category_id_generator, unique_equipment_id_generator, \
-    unique_inventory_id_generator, unique_assignment_id_generator, unique_order_id_generator, \
-    unique_order_item_id_generator, unique_maintenance_id_generator, unique_logistics_id_generator
+from tas_project.utils import unique_assignment_id_generator, unique_category_id_generator, unique_equipment_id_generator, unique_inventory_id_generator, unique_logistics_id_generator, unique_maintenance_id_generator, unique_order_id_generator, unique_order_item_id_generator, unique_site_item_assignment_id_generator, unique_supplier_id_generator
 
 User = get_user_model()
 
@@ -104,8 +102,8 @@ class Equipment(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    sku = models.CharField(max_length=100, unique=True)
-    serial_number = models.CharField(max_length=100, unique=True)
+    sku = models.CharField(max_length=100, null=True, blank=True)
+    serial_number = models.CharField(max_length=100, null=True, blank=True)
     last_maintenance = models.DateField(null=True, blank=True)
 
     purchase_date = models.DateField()
@@ -256,3 +254,45 @@ def pre_save_maintenance_id_receiver(sender, instance, *args, **kwargs):
         instance.maintenance_id = unique_maintenance_id_generator(instance)
 
 pre_save.connect(pre_save_maintenance_id_receiver, sender=Maintenance)
+
+
+
+
+
+class SiteItemAssignment(models.Model):
+    site_item_assignment_id = models.CharField(max_length=200, null=True, blank=True)
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    return_due_date = models.DateField(blank=True, null=True)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.item.name} to {self.user.first_name}"
+
+
+def pre_save_site_item_assignment_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.site_item_assignment_id:
+        instance.site_item_assignment_id = unique_site_item_assignment_id_generator(instance)
+
+pre_save.connect(pre_save_site_item_assignment_id_receiver, sender=SiteItemAssignment)
+
+
+
+
+class ItemHistory(models.Model):
+
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
+    notes = models.TextField(null=True, blank=True)
+    quantity = models.IntegerField(default=0)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

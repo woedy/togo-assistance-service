@@ -11,7 +11,7 @@ from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerial
 from bookings.models import Booking, BookDate, ForwardingList
 from clients.models import Client
 from notifications.models import Notification
-from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite
+from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite, ZoneCategory
 
 
 @api_view(['POST', ])
@@ -176,6 +176,79 @@ def forward_to_department(request):
 
 
 
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def add_zone_category_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        name = request.data.get('name', "")
+
+        if not name:
+            errors['name'] = ['Category name is required.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+
+        category = ZoneCategory.objects.create(
+            name=name
+        )
+
+
+
+        data['category_id'] = category.category_id
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def delete_zone_category_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        category_id = request.data.get('category_id', "")
+
+        if not category_id:
+            errors['category_id'] = ['Zone category ID is required.']
+
+        try:
+            category = ZoneCategory.objects.get(category_id=category_id)
+        except:
+            errors['category_id'] = ['Category does not exist.']
+
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        category.delete()
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
+
+
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
@@ -186,21 +259,24 @@ def add_client_request_basic_zone_view(request):
 
     if request.method == 'POST':
         #client_id = request.data.get('client_id', "")
+
+        category_id = request.data.get('category_id', "")
         zone_name = request.data.get('zone_name', "")
         description = request.data.get('description', "")
         coordinates = request.data.get('coordinates', "")
 
 
-        #if not client_id:
-        #    errors['client_id'] = ['Client ID is required.']
+
+        if not category_id:
+            errors['category_id'] = ['Zone category ID is required.']
 
         if not zone_name:
             errors['zone_name'] = ['Zone name is required.']
 
-        #try:
-        #    client = Client.objects.get(client_id=client_id)
-        #except:
-        #    errors['client_id'] = ['Client does not exist.']
+        try:
+            category = ZoneCategory.objects.get(category_id=category_id)
+        except:
+            errors['category_id'] = ['Zone category does not exist.']
 
         if errors:
             payload['message'] = "Errors"
@@ -211,6 +287,7 @@ def add_client_request_basic_zone_view(request):
         new_client_zone = ClientZone.objects.create(
             zone_name=zone_name,
             description=description,
+            category=category
         )
         for coordinate in coordinates:
             zone_coordinate = ClientZoneCoordinate.objects.create(

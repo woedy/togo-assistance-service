@@ -1,8 +1,8 @@
 from django.contrib import admin
 
 from post_sites.models import ClientZone, ClientZoneCoordinate, ClientPostSite, PostSiteActivity, PostOrder, \
-    PostSiteNote, PostSiteFile, PostSiteAssignedGuard, PostSiteTask, SiteReport
-
+    PostSiteNote, PostSiteFile, PostSiteAssignedGuard, PostSiteTask, SiteReport, ZoneCategory
+admin.site.register(ZoneCategory)
 admin.site.register(ClientZone)
 admin.site.register(ClientZoneCoordinate)
 admin.site.register(ClientPostSite)

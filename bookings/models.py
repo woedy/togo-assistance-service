@@ -277,6 +277,20 @@ class FieldReport(models.Model):
     title = models.CharField(max_length=1000, null=True, blank=True)
     report = models.TextField(null=True, blank=True)
 
+    resource_person_name = models.CharField(max_length=500, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    resident_neighborhood = models.CharField(max_length=500, null=True, blank=True)
+
+    is_company =  models.BooleanField(default=False)
+
+
+    company_name = models.CharField(max_length=500, null=True, blank=True)
+    site_type = models.CharField(max_length=500, null=True, blank=True)
+
+    date_of_visit = models.DateField(null=True, blank=True)
+    time_of_visit = models.TimeField(null=True, blank=True)
+
+
     is_archived = models.BooleanField(default=False)
     status = models.CharField(max_length=10, choices=FIELD_REPORT_STATUS_CHOICES, default='Pending')
 

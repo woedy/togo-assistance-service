@@ -233,6 +233,21 @@ def unique_complaint_id_generator(instance):
         return None
     return complaint_id
 
+def unique_department_complaint_id_generator(instance):
+    """
+    This is for a department_complaint_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    department_complaint_id = "D-COMP-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(D)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(department_complaint_id=department_complaint_id).exists()
+    if qs_exists:
+        return None
+    return department_complaint_id
+
 def unique_staff_complaint_id_generator(instance):
     """
     This is for a staff_complaint_id field
@@ -295,6 +310,22 @@ def unique_zone_id_generator(instance):
     if qs_exists:
         return None
     return zone_id
+
+
+def unique_zone_category_id_generator(instance):
+    """
+    This is for a category_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    category_id = "z-cat-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(Z)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(category_id=category_id).exists()
+    if qs_exists:
+        return None
+    return category_id
 
 def unique_estimate_id_generator(instance):
     """
@@ -601,6 +632,24 @@ def unique_maintenance_id_generator(instance):
     if qs_exists:
         return None
     return maintenance_id
+
+
+
+
+def unique_site_item_assignment_id_generator(instance):
+    """
+    This is for a site_assignment_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    site_item_assignment_id = "S-ASS-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(NCE)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(site_item_assignment_id=site_item_assignment_id).exists()
+    if qs_exists:
+        return None
+    return site_item_assignment_id
 
 
 def unique_recruitment_id_generator(instance):

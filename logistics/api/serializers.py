@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from logistics.models import Supplier, Category, OrderItem, Equipment, Inventory, Assignment, Order, Maintenance
+from accounts.api.serializers import ListAllUsersSerializer
+from logistics.models import SiteItemAssignment, Supplier, Category, OrderItem, Equipment, Inventory, Assignment, Order, Maintenance
 from security_team.api.serializers import SecurityGuardDetailsSerializer
 
 User = get_user_model()
@@ -141,4 +142,25 @@ class AllOrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
+        fields = "__all__"
+
+
+
+
+
+class SiteItemAssignmentDetailsSerializer(serializers.ModelSerializer):
+    equipment = AllEquipmentSerializer(many=False)
+    user = ListAllUsersSerializer(many=False)
+
+    class Meta:
+        model = SiteItemAssignment
+        fields = "__all__"
+
+
+
+class AllSiteItemAssignmentSerializer(serializers.ModelSerializer):
+    equipment = AllEquipmentSerializer(many=False)
+    user = ListAllUsersSerializer(many=False)
+    class Meta:
+        model = SiteItemAssignment
         fields = "__all__"

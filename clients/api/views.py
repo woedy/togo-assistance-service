@@ -220,7 +220,6 @@ def get_client_details_view(request):
 
     return Response(payload, status=status.HTTP_200_OK)
 
-
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])
 @authentication_classes([CustomJWTAuthentication, ])
@@ -240,6 +239,18 @@ def edit_client(request):
         gender = request.data.get('gender', "")
         person_in_charge = request.data.get('person_in_charge', "")
         client_type = request.data.get('client_type', "")
+
+
+
+        legal_Form = request.data.get('legal_Form', "")
+        share_capital = request.data.get('share_capital', "")
+        registration_number = request.data.get('registration_number', "")
+        title_of_person = request.data.get('title_of_person', "")
+        type_of_work = request.data.get('type_of_work', "")
+        address = request.data.get('address', "")
+        passport_id_number = request.data.get('passport_id_number', "")
+
+
 
         if not client_id:
             errors['client_id'] = ['Client ID is required.']
@@ -269,7 +280,7 @@ def edit_client(request):
 
         try:
             client_profile = Client.objects.get(client_id=client_id)
-        except:
+        except Client.DoesNotExist:
             errors['client_id'] = ['Client does not exist.']
 
         if errors:
@@ -277,16 +288,55 @@ def edit_client(request):
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
-        client_profile.user.first_name = first_name
-        client_profile.company_name = company_name
-        client_profile.user.last_name = last_name
-        client_profile.user.phone = phone
+        # Update fields only if provided and not empty
+        if first_name:
+            client_profile.user.first_name = first_name
+        if last_name:
+            client_profile.user.last_name = last_name
+        if phone:
+            client_profile.user.phone = phone
+        if email:
+            client_profile.user.email = email
+
+        if gender:
+            client_profile.user.gender = gender
         client_profile.user.save()
 
-        client_profile.gender = gender
-        client_profile.purpose = purpose
-        client_profile.person_in_charge = person_in_charge
-        client_profile.client_type = client_type
+
+        if purpose:
+            client_profile.purpose = purpose
+        if person_in_charge:
+            client_profile.person_in_charge = person_in_charge
+        if client_type:
+            client_profile.client_type = client_type
+
+
+        if legal_Form:
+            client_profile.legal_Form = legal_Form
+
+
+        if share_capital:
+            client_profile.share_capital = share_capital
+
+        if registration_number:
+            client_profile.registration_number = registration_number
+
+
+        if title_of_person:
+            client_profile.title_of_person = title_of_person
+
+
+        if type_of_work:
+            client_profile.type_of_work = type_of_work
+        
+        if address:
+            client_profile.address = address
+
+        
+        if passport_id_number:
+            client_profile.passport_id_number = passport_id_number
+
+
         client_profile.save()
 
         data["user_id"] = client_profile.user.user_id
@@ -295,12 +345,12 @@ def edit_client(request):
         data["first_name"] = client_profile.user.first_name
         data["last_name"] = client_profile.user.last_name
         data["purpose"] = client_profile.purpose
-        data["gender"] = client_profile.gender
+        data["gender"] = client_profile.user.gender
 
         new_activity = AllActivity.objects.create(
             user=client_profile.user,
             subject="Profile Edited",
-            body=client_profile.user.email + " Just edited their account."
+            body=f"{client_profile.user.email} just edited their account."
         )
         new_activity.save()
 
@@ -308,7 +358,6 @@ def edit_client(request):
         payload['data'] = data
 
     return Response(payload)
-
 
 
 @api_view(['POST', ])

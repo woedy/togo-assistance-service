@@ -1,5 +1,6 @@
 from django.urls import path
 
+from human_resources.api.department_complaint import add_department_complaint, archive_department_complaint, change_dep_complaint_status, delete_department_complaint, edit_department_complaint, forward_dep_complaint_to_department, get_all_archived_department_complaints_view, get_all_department_complaints_view, get_department_complaint_details_view, unarchive_department_complaint
 from human_resources.api.non_system_user_views import add_non_system_user
 from human_resources.api.recruitment_attachment_views import get_all_archived_recruitment_attachments_view, \
     add_recruitment_attachment, get_all_recruitment_attachments_view, archive_recruitment_attachment, \
@@ -63,4 +64,18 @@ urlpatterns = [
 
     path('add-non-system-user/', add_non_system_user, name="add_non_system_user"),
 
+
+    path('add-department-complaint/', add_department_complaint, name="add_department_complaint"),
+    path('edit-department-complaint/', edit_department_complaint, name="edit_department_complaint"),
+    path('get-all-department-complaints/', get_all_department_complaints_view, name="get_all_department_complaints_view"),
+    path('get-department-complaint-details/', get_department_complaint_details_view, name="get_department_complaint_details_view"),
+    path('archive-department-complaint/', archive_department_complaint, name="archive_department_complaint"),
+    path('unarchive-department-complaint/', unarchive_department_complaint, name="unarchive_department_complaint"),
+    path('delete-department-complaint/', delete_department_complaint, name="delete_department_complaint"),
+    path('get-all-archived-department-complaints/', get_all_archived_department_complaints_view, name="get_all_archived_department_complaints_view"),
+
+    path('change-dep-complaint-status/', change_dep_complaint_status, name="change_dep_complaint_status"),
+
+    path('forward-dep-complaint-to/', forward_dep_complaint_to_department,
+         name="forward_dep_complaint_to_department"),
 ]

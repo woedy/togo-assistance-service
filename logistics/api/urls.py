@@ -19,6 +19,7 @@ from logistics.api.views.order_items_views import add_order_item, edit_order_ite
     delete_order_item
 from logistics.api.views.order_views import add_order, edit_order, get_all_orders_view, get_order_details_view, \
     archive_order, unarchive_order, get_all_archived_orders_view, delete_order
+from logistics.api.views.site_assignment_view import add_site_item_assignment, archive_site_item_assignment, delete_site_item_assignment, get_all_archived_site_item_assignments_view, get_all_site_item_assignments_view, get_site_assignment_details_view, unarchive_site_item_assignment
 from logistics.api.views.supply_views import add_supplier, edit_supplier, get_all_supplier_view, get_supplier_details_view, \
     archive_supplier, delete_supplier, unarchive_supplier, get_all_archived_suppliers_view
 
@@ -104,5 +105,19 @@ urlpatterns = [
     path('unarchive-maintenance/', unarchive_maintenance, name="unarchive_maintenance"),
     path('get-all-archived-maintenances/', get_all_archived_maintenances_view, name="get_all_archived_order_items_view"),
     path('delete-maintenance/', delete_maintenance, name="delete_maintenance"),
+
+
+    ########## Site item Assignment ####
+    path('add-site-item-assignment/', add_site_item_assignment, name="add_site_item_assignment"),
+    # path('edit-item-assignment/', edit_assignment, name="edit_assignment"),
+    path('get-all-site-item-assignment/', get_all_site_item_assignments_view, name="get_all_site_item_assignments_view"),
+    path('get-site-item-assignment-details/', get_site_assignment_details_view, name="get_site_assignment_details_view"),
+    path('archive-site-item-assignment/', archive_site_item_assignment, name="archive_site_item_assignment"),
+    path('unarchive-site-item-assignment/', unarchive_site_item_assignment, name="unarchive_site_item_assignment"),
+    path('get-all-archived-site-item-assignments/', get_all_archived_site_item_assignments_view, name="get_all_archived_assignments_view"),
+    path('delete-site-item-assignment/', delete_site_item_assignment, name="delete_site_item_assignment"),
+
+
+
 
 ]

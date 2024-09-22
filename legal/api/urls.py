@@ -1,6 +1,6 @@
 from django.urls import path
 
-from legal.api.views import add_client_request_contract_view, get_all_client_contracts, archive_contract, \
+from legal.api.views import add_client_request_contract_view, get_all_client_contracts, archive_contract, list_deptors_view, \
     unarchive_contract, delete_contract, get_all_archive_client_contracts, edit_client_request_contract_view, \
     change_contract_status_view
 app_name = 'legal'
@@ -15,5 +15,8 @@ urlpatterns = [
     path('get-all-archived-client-contracts/', get_all_archive_client_contracts, name="get_all_archive_client_contracts"),
 
     path('change-contract-status/', change_contract_status_view, name="change_contract_status_view"),
+
+
+    path('get-all-deptors/', list_deptors_view, name="list_deptors_views"),
 
 ]

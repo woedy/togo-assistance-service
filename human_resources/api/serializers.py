@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from human_resources.models import HumanResource, StaffPayrollEntry, StaffPayPeriod, Recruitment, RecruitmentAttachment
+from human_resources.models import DepartmentComplaint, HumanResource, StaffPayrollEntry, StaffPayPeriod, Recruitment, RecruitmentAttachment
 
 User = get_user_model()
 
@@ -80,3 +80,28 @@ class AllRecruitmentAttachmentsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+
+
+
+class DepartmentComplaintDetailSerializer(serializers.ModelSerializer):
+    department_complaint_forwarding_list = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DepartmentComplaint
+        fields = "__all__"
+
+
+    
+    def get_department_complaint_forwarding_list(self, obj):
+        return [dcl.department for dcl in obj.department_forwarding_list.all()]
+
+
+
+
+
+
+class AllDepartmentComplaintsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DepartmentComplaint
+        fields = "__all__"

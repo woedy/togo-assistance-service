@@ -492,3 +492,38 @@ def delete_tax_view(request):
     return Response(payload)
 
 
+
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def accept_invoice_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        estimate_id = request.data.get('estimate_id', "")
+
+        if not estimate_id:
+            errors['estimate_id'] = ['Estimate ID is required.']
+
+        try:
+            estimate = Estimate.objects.get(estimate_id=estimate_id)
+        except:
+            errors['estimate_id'] = ['Estimate does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
+        estimate.accepted = True
+        estimate.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)

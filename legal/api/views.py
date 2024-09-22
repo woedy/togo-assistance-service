@@ -9,7 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from bookings.models import Booking
+from bookings.models import Booking, Estimate
+from commercial.api.serializers import AllEstimatesSerializer
 from legal.api.serializers import AllContractsSerializer
 from legal.models import Contract, Legal
 from notifications.models import Notification
@@ -545,6 +546,59 @@ def get_all_archive_client_contracts(request):
         'total_pages': paginator.num_pages,
         'next': paginated_contracts.next_page_number() if paginated_contracts.has_next() else None,
         'previous': paginated_contracts.previous_page_number() if paginated_contracts.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
+
+
+
+
+
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def list_deptors_view(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+
+    all_estimates = Estimate.objects.all().filter(is_archived=False, accepted=True, paid=False).order_by('-created_at')
+
+
+    if search_query:
+        all_estimates = all_estimates.filter(
+            Q(estimate_id__icontains=search_query)
+        )
+
+
+    paginator = Paginator(all_estimates, page_size)
+
+    try:
+        paginated_estimates = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_estimates = paginator.page(1)
+    except EmptyPage:
+        paginated_estimates = paginator.page(paginator.num_pages)
+
+    all_estimates_serializer = AllEstimatesSerializer(paginated_estimates, many=True)
+
+
+    data['deptors'] = all_estimates_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_estimates.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_estimates.next_page_number() if paginated_estimates.has_next() else None,
+        'previous': paginated_estimates.previous_page_number() if paginated_estimates.has_previous() else None,
     }
 
     payload['message'] = "Successful"

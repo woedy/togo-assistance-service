@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from bookings.models import Booking, BookedGuard, ForwardingList, FieldReport, BookingEmail
 from clients.api.serializers import AllClientsSerializer
-from clients.models import Client, ClientComplaint
+from clients.models import Client
 from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate, PostOrder, SiteReport
 from security_team.api.serializers import SecurityGuardDetailsSerializer
 

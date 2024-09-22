@@ -29,6 +29,16 @@ def add_field_report(request):
         report = request.data.get('report', "")
 
 
+        resource_person_name = request.data.get('resource_person_name', "")
+        phone = request.data.get('phone', "")
+        resident_neighborhood = request.data.get('resident_neighborhood', "")
+        is_company = request.data.get('is_company', "")
+        company_name = request.data.get('company_name', "")
+        site_type = request.data.get('site_type', "")
+        date_of_visit = request.data.get('date_of_visit', "")
+        time_of_visit = request.data.get('time_of_visit', "")
+
+
         if not booking_id:
             errors['booking_id'] = ['Booking ID is required.']
 
@@ -54,6 +64,20 @@ def add_field_report(request):
             booking=booking,
             title=title,
             report=report,
+
+
+
+            resource_person_name=resource_person_name,
+            phone=phone,
+            resident_neighborhood=resident_neighborhood,
+            is_company=is_company,
+            company_name=company_name,
+            site_type=site_type,
+            date_of_visit=date_of_visit,
+            time_of_visit=time_of_visit,
+
+
+
         )
         notification = Notification.objects.create(
             english_title='Field Report Added',
@@ -234,6 +258,17 @@ def edit_field_report(request):
         report = request.data.get('report', "")
 
 
+        resource_person_name = request.data.get('resource_person_name', "")
+        phone = request.data.get('phone', "")
+        resident_neighborhood = request.data.get('resident_neighborhood', "")
+        is_company = request.data.get('is_company', "")
+        company_name = request.data.get('company_name', "")
+        site_type = request.data.get('site_type', "")
+        date_of_visit = request.data.get('date_of_visit', "")
+        time_of_visit = request.data.get('time_of_visit', "")
+
+
+
 
         if not field_report_id:
             errors['field_report_id'] = ['Field Report ID is required.']
@@ -254,9 +289,36 @@ def edit_field_report(request):
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+        
+        if title:
+            field_report.title = title
+        if report:
+            field_report.report = report
 
-        field_report.title = title
-        field_report.report = report
+
+
+        
+        if resource_person_name:
+            field_report.resource_person_name = resource_person_name
+        if phone:
+            field_report.phone = phone
+        
+        if resident_neighborhood:
+            field_report.resident_neighborhood = resident_neighborhood
+        if is_company:
+            field_report.is_company = is_company
+        if company_name:
+            field_report.company_name = company_name
+
+        if site_type:
+            field_report.site_type = site_type
+        if date_of_visit:
+            field_report.date_of_visit = date_of_visit
+        if is_company:
+            field_report.time_of_visit = time_of_visit
+
+
+        
         field_report.save()
 
         notification = Notification.objects.create(

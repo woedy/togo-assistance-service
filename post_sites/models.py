@@ -7,10 +7,32 @@ from django.db.models.signals import pre_save
 
 from clients.models import Client
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_site_id_generator, unique_zone_id_generator, unique_post_order_id_generator, \
+from tas_project.utils import unique_category_id_generator, unique_site_id_generator, unique_zone_category_id_generator, unique_zone_id_generator, unique_post_order_id_generator, \
     unique_site_report_id_generator
 
 User = get_user_model()
+
+
+
+class ZoneCategory(models.Model):
+    category_id = models.CharField(max_length=200, blank=True, null=True)
+    name = models.CharField(max_length=5000, blank=True, null=True)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+def pre_save_category_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.category_id:
+        instance.category_id = unique_zone_category_id_generator(instance)
+
+pre_save.connect(pre_save_category_id_receiver, sender=ZoneCategory)
+
+
+
+
 
 class ClientZone(models.Model):
     zone_id = models.CharField(max_length=200, null=True, blank=True)
@@ -19,6 +41,8 @@ class ClientZone(models.Model):
     zone_name = models.CharField(max_length=5000, blank=True, null=True)
 
     description = models.TextField(null=True, blank=True)
+
+    category = models.ForeignKey(ZoneCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='zone_categories')
 
     is_archived = models.BooleanField(default=False)
     active = models.BooleanField(default=False)

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from logistics.models import Category, Supplier, Equipment, Inventory, Order, OrderItem, Maintenance, Logistics
+from logistics.models import Category, SiteItemAssignment, Supplier, Equipment, Inventory, Order, OrderItem, Maintenance, Logistics
 
 admin.site.register(Logistics)
 admin.site.register(Category)
@@ -10,3 +10,4 @@ admin.site.register(Inventory)
 admin.site.register(Order)
 admin.site.register(OrderItem)
 admin.site.register(Maintenance)
+admin.site.register(SiteItemAssignment)

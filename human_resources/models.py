@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, pre_save
 
 from communications.models import PrivateChatRoom
-from tas_project.utils import unique_hr_id_generator, unique_staff_complaint_id_generator, \
+from tas_project.utils import unique_department_complaint_id_generator, unique_hr_id_generator, unique_staff_complaint_id_generator, \
     unique_staff_payroll_id_generator, unique_recruitment_id_generator
 
 User = get_user_model()
@@ -283,3 +283,56 @@ class NonSystemUser(models.Model):
     def __str__(self):
         return self.user.first_name
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+class DepartmentComplaint(models.Model):
+    department_complaint_id = models.CharField(max_length=200, null=True, blank=True)
+
+
+    title = models.CharField(max_length=1000, null=True, blank=True)
+    note = models.TextField(null=True, blank=True)
+
+    from_department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    status = models.CharField(max_length=255, default="Pending", null=True, blank=True, choices=STATUS_CHOICE)
+
+    is_archived = models.BooleanField(default=False)
+
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+
+def pre_save_department_complaint_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.department_complaint_id:
+        instance.department_complaint_id = unique_department_complaint_id_generator(instance)
+
+pre_save.connect(pre_save_department_complaint_id_receiver, sender=DepartmentComplaint)
+
+
+
+
+
+
+class DetartmentForwardingList(models.Model):
+    department_complaint = models.ForeignKey(DepartmentComplaint, on_delete=models.CASCADE, related_name='department_forwarding_list')
+
+    department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

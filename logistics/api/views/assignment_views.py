@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from accounts.api.custom_jwt import CustomJWTAuthentication
 from accounts.api.views import is_valid_email
 from logistics.api.serializers import AllAssignmentSerializer, AssignmentDetailsSerializer
-from logistics.models import Assignment, Equipment
+from logistics.models import Assignment, Equipment, Inventory
 from security_team.models import SecurityGuard
 
 User = get_user_model()
@@ -55,6 +55,21 @@ def add_assignment(request):
             errors['equipment_id'] = ['Equipment does not exist.']
 
 
+        try:
+            inventory = Inventory.objects.get(equipment=equipment)
+        except:
+            errors['inventroy'] = ['Inventory does not exist.']
+
+        if int(inventory.quantity) == 0:
+            errors['inventroy'] = ['There 0 items in the inventory.']
+
+        if int(inventory.quantity) < int(quantity):
+            errors['inventroy'] = [f'There are only {inventory.quantity} items left.']
+
+
+
+
+
         if errors:
             payload['message'] = "Errors"
             payload['errors'] = errors
@@ -67,6 +82,9 @@ def add_assignment(request):
             quantity=quantity,
             return_due_date=return_due_date
         )
+
+        inventory.quantity = inventory.quantity - int(quantity)
+        inventory.save()
 
 
 
