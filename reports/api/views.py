@@ -27,6 +27,7 @@ def add_internal_report(request):
     if request.method == 'POST':
         user_id = request.data.get('user_id', "")
         title = request.data.get('title', "")
+        file = request.data.get('file', "")
         report = request.data.get('report', "")
 
         if not user_id:
@@ -52,6 +53,7 @@ def add_internal_report(request):
         new_report = Report.objects.create(
             user=user,
             title=title,
+            file=file,
             report=report,
         )
 

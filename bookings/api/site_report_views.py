@@ -27,6 +27,8 @@ def add_site_report(request):
         site_id = request.data.get('site_id', "")
         subject = request.data.get('subject', "")
         description = request.data.get('description', "")
+        report_type = request.data.get('report_type', "")
+        file = request.data.get('file', "")
         sender_id = request.data.get('sender_id', "")
 
 
@@ -66,7 +68,9 @@ def add_site_report(request):
             post_site=post_site,
             subject=subject,
             description=description,
-            sender=sender
+            report_type=report_type,
+            sender=sender,
+            file=file
         )
 
         data["site_report_id"] = site_report.site_report_id
@@ -175,7 +179,9 @@ def edit_site_report(request):
         site_report_id = request.data.get('site_report_id', "")
         site_id = request.data.get('site_id', "")
         subject = request.data.get('subject', "")
+        report_type = request.data.get('report_type', "")
         description = request.data.get('description', "")
+        file = request.data.get('file', "")
         sender_id = request.data.get('sender_id', "")
 
         if not site_report_id:
@@ -215,11 +221,20 @@ def edit_site_report(request):
             payload['message'] = "Errors"
             payload['errors'] = errors
             return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+        if subject:
+            site_report.subject = subject
+        if description:
+            site_report.description = description
+        if post_site:
+            site_report.post_site = post_site
+        if sender_id:
+            site_report.sender = sender
 
-        site_report.subject = subject
-        site_report.description = description
-        site_report.post_site = post_site
-        site_report.sender = sender
+        if file:
+            site_report.file = file
+
+        if report_type:
+            site_report.report_type = report_type
 
         site_report.save()
 

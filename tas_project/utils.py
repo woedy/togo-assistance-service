@@ -390,6 +390,36 @@ def unique_operations_id_generator(instance):
         return None
     return operations_id
 
+def unique_panic_report_id_generator(instance):
+    """
+    This is for a panic_report_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    panic_report_id = "PR-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(C)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(panic_report_id=panic_report_id).exists()
+    if qs_exists:
+        return None
+    return panic_report_id
+
+def unique_site_alert_id_generator(instance):
+    """
+    This is for a site_alert_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 7)
+    site_alert_id = "SA-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(ALT)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(site_alert_id=site_alert_id).exists()
+    if qs_exists:
+        return None
+    return site_alert_id
+
 
 def unique_room_id_generator(instance):
     """
@@ -800,3 +830,18 @@ def unique_letter_id_generator(instance):
     if qs_exists:
         return None
     return letter_id
+
+def unique_item_history_id_generator(instance):
+    """
+    This is for a item_history_id field
+    :param instance:
+    :return:
+    """
+    size = random.randint(5, 10)
+    item_history_id = "it-His-" + random_string_generator(size=size, chars=string.ascii_uppercase + string.digits) + "-(G)"
+
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(item_history_id=item_history_id).exists()
+    if qs_exists:
+        return None
+    return item_history_id

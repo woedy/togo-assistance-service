@@ -333,6 +333,40 @@ def delete_equipment(request):
     return Response(payload)
 
 
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def change_equipment_status(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    if request.method == 'POST':
+        equipment_id = request.data.get('equipment_id', "")
+        _status = request.data.get('status', "")
+
+        if not equipment_id:
+            errors['equipment_id'] = ['Equipment ID is required.']
+
+        try:
+            equipment = Equipment.objects.get(equipment_id=equipment_id)
+        except:
+            errors['equipment_id'] = ['Equipment does not exist.']
+
+        if errors:
+            payload['message'] = "Errors"
+            payload['errors'] = errors
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+        
+        equipment.status = _status
+        equipment.save()
+
+
+        payload['message'] = "Successful"
+        payload['data'] = data
+
+    return Response(payload)
+
 
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated, ])

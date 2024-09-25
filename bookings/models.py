@@ -1,3 +1,5 @@
+import os
+import random
 from django.db import models
 from django.db.models.signals import pre_save
 
@@ -269,6 +271,27 @@ FIELD_REPORT_STATUS_CHOICES = [
         ('Rejected', 'Rejected'),
     ]
 
+
+
+
+
+
+def get_file_ext(filepath):
+    base_name = os.path.basename(filepath)
+    name, ext = os.path.splitext(base_name)
+    return name, ext
+
+
+def upload_image_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "field_report/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+
+
 class FieldReport(models.Model):
     field_report_id = models.CharField(max_length=200, null=True, blank=True)
 
@@ -283,6 +306,7 @@ class FieldReport(models.Model):
 
     is_company =  models.BooleanField(default=False)
 
+    file = models.FileField(upload_to=upload_image_path, null=True, blank=True,)
 
     company_name = models.CharField(max_length=500, null=True, blank=True)
     site_type = models.CharField(max_length=500, null=True, blank=True)

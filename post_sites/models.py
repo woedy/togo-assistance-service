@@ -164,13 +164,36 @@ def pre_save_post_order_id_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(pre_save_post_order_id_receiver, sender=PostOrder)
 
+
+
+
+
+
+def get_file_ext(filepath):
+    base_name = os.path.basename(filepath)
+    name, ext = os.path.splitext(base_name)
+    return name, ext
+
+
+def upload_image_path(instance, filename):
+    new_filename = random.randint(1, 3910209312)
+    name, ext = get_file_ext(filename)
+    final_filename = '{new_filename}{ext}'.format(new_filename=new_filename, ext=ext)
+    return "site_report/{new_filename}/{final_filename}".format(
+        new_filename=new_filename,
+        final_filename=final_filename
+    )
+
+
 class SiteReport(models.Model):
     site_report_id = models.CharField(max_length=200, null=True, blank=True)
 
     post_site = models.ForeignKey(ClientPostSite, on_delete=models.CASCADE, related_name="site_reports")
     subject = models.CharField(max_length=1000, null=True, blank=True)
+    report_type = models.CharField(max_length=1000, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='report_sender')
+    file = models.FileField(upload_to=upload_image_path, null=True, blank=True,)
 
     is_archived = models.BooleanField(default=False)
 

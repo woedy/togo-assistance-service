@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from bookings.api.serializers import ClientPostSiteDetailsSerializer
 from human_resources.models import DepartmentComplaint, HumanResource, StaffPayrollEntry, StaffPayPeriod, Recruitment, RecruitmentAttachment
 
 User = get_user_model()
@@ -105,3 +106,6 @@ class AllDepartmentComplaintsSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentComplaint
         fields = "__all__"
+
+
+

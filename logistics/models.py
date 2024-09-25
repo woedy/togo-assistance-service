@@ -4,7 +4,7 @@ from django.db.models.signals import pre_save
 
 from communications.models import PrivateChatRoom
 from security_team.models import SecurityGuard
-from tas_project.utils import unique_assignment_id_generator, unique_category_id_generator, unique_equipment_id_generator, unique_inventory_id_generator, unique_logistics_id_generator, unique_maintenance_id_generator, unique_order_id_generator, unique_order_item_id_generator, unique_site_item_assignment_id_generator, unique_supplier_id_generator
+from tas_project.utils import unique_assignment_id_generator, unique_category_id_generator, unique_equipment_id_generator, unique_inventory_id_generator, unique_item_history_id_generator, unique_logistics_id_generator, unique_maintenance_id_generator, unique_order_id_generator, unique_order_item_id_generator, unique_site_item_assignment_id_generator, unique_supplier_id_generator
 
 User = get_user_model()
 
@@ -93,6 +93,14 @@ pre_save.connect(pre_save_supplier_id_receiver, sender=Supplier)
 
 
 
+STATUS_CHOICE = (
+    ('Good', 'Good'),
+    ('Unusable', 'Unusable'),
+    ('Theft', 'Theft'),
+    ('Expired', 'Expired'),
+
+)
+
 
 
 class Equipment(models.Model):
@@ -105,6 +113,8 @@ class Equipment(models.Model):
     sku = models.CharField(max_length=100, null=True, blank=True)
     serial_number = models.CharField(max_length=100, null=True, blank=True)
     last_maintenance = models.DateField(null=True, blank=True)
+
+    status = models.CharField(max_length=100, default='Good', choices=STATUS_CHOICE, blank=True, null=True)
 
     purchase_date = models.DateField()
 
@@ -287,6 +297,8 @@ pre_save.connect(pre_save_site_item_assignment_id_receiver, sender=SiteItemAssig
 
 
 class ItemHistory(models.Model):
+    item_history_id = models.CharField(max_length=200, null=True, blank=True)
+    guard = models.ForeignKey(SecurityGuard, on_delete=models.SET_NULL, null=True, blank=True, related_name='equip_guard')
 
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     notes = models.TextField(null=True, blank=True)
@@ -296,3 +308,51 @@ class ItemHistory(models.Model):
     active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+def pre_save_item_history_id_receiver(sender, instance, *args, **kwargs):
+    if not instance.item_history_id:
+        instance.item_history_id = unique_item_history_id_generator(instance)
+
+pre_save.connect(pre_save_item_history_id_receiver, sender=ItemHistory)
+
+
+
+
+STATUS_CHOICE = (
+    ('Pending', 'Pending'),
+    ('Approved', 'Approved'),
+    ('Declined', 'Declined'),
+
+)
+
+
+
+DEPARTMENT = (
+    ('SECRETARY', 'SECRETARY'),
+    ('HUMAN RESOURCES', 'HUMAN RESOURCES'),
+    ('ADMIN', 'ADMIN'),
+    ('LOGISTICS', 'LOGISTICS'),
+    ('BILLING', 'BILLING'),
+    ('OPERATIONS', 'OPERATIONS'),
+    ('COMMERCIAL', 'COMMERCIAL'),
+    ('CLIENT', 'CLIENT'),
+    ('GUARD', 'GUARD'),
+    ('LEGAL', 'LEGAL'),
+)
+
+
+class DepartmentItemRequest(models.Model):
+    item_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=100, default='Pending', choices=STATUS_CHOICE, blank=True, null=True)
+    quantity = models.IntegerField(default=0)
+    department = models.CharField(max_length=100, choices=DEPARTMENT, blank=True, null=True)
+
+    is_archived = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.item_name

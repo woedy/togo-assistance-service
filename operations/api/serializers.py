@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from bookings.api.serializers import BookingDetailsSerializer
 from bookings.models import Deployment, DeploymentAttendance
-from operations.models import Operation
+from operations.models import Operation, PanicReport
 from security_team.api.serializers import SecurityGuardDetailsSerializer
 from clients.models import Client, ClientComplaint
 from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate, PostOrder, SiteReport
@@ -99,3 +99,34 @@ class AllDeploymentAttendancesSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+
+
+class PanicReportDetailsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = PanicReport
+        fields = "__all__"
+
+class AllPanicReportsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = PanicReport
+        fields = "__all__"
+
+
+class SiteAlertDetailsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = PanicReport
+        fields = "__all__"
+
+class AllSiteAlertsSerializer(serializers.ModelSerializer):
+    post_site = ClientPostSiteDetailsSerializer(many=False)
+
+    class Meta:
+        model = PanicReport
+        fields = "__all__"

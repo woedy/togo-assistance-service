@@ -5,12 +5,14 @@ from logistics.api.views.assignment_views import add_assignment, edit_assignment
     delete_assignment
 from logistics.api.views.category_views import add_category, edit_category, get_all_category_view, \
     get_category_details_view, archive_category, unarchive_category, get_all_archived_categories_view, delete_category
-from logistics.api.views.equipments_views import add_equipment, edit_equipment, get_all_equipment_view, \
+from logistics.api.views.department_item_request_view import add_department_item_request, archive_department_item_request, change_department_item_request_status, delete_department_item_request, edit_department_item_request, get_all_archived_department_item_request_view, get_all_department_item_request_view, unarchive_department_item_request
+from logistics.api.views.equipments_views import add_equipment, change_equipment_status, edit_equipment, get_all_equipment_view, \
     get_equipment_details_view, archive_equipment, unarchive_equipment, get_all_archived_equipments_view, \
     delete_equipment
 from logistics.api.views.inventory_views import add_inventory, edit_inventory, \
     get_all_inventorys_view, get_inventory_details_view, archive_inventory, unarchive_inventory, \
     get_all_archived_inventorys_view, delete_inventory
+from logistics.api.views.item_history import add_item_history, archive_item_history, delete_item_history, edit_item_history, get_all_archived_items_history_view, get_all_item_history_view, get_item_history_details_view, unarchive_item_history
 from logistics.api.views.maintainance_views import add_maintenance, edit_maintenance, get_all_maintenance_view, \
     get_maintenance_details_view, archive_maintenance, unarchive_maintenance, get_all_archived_maintenances_view, \
     delete_maintenance
@@ -55,6 +57,7 @@ urlpatterns = [
     path('unarchive-equipment/', unarchive_equipment, name="unarchive_equipment"),
     path('get-all-archived-equipments/', get_all_archived_equipments_view, name="get_all_archived_equipment_view"),
     path('delete-equipment/', delete_equipment, name="delete_equipment"),
+    path('change-equipment-status/', change_equipment_status, name="change_equipment_status"),
 
     ########## Inventory ####
     path('add-inventory/', add_inventory, name="add_inventory"),
@@ -119,5 +122,24 @@ urlpatterns = [
 
 
 
+
+    path('add-item-history/', add_item_history, name="add_item_history"),
+    path('edit-item-history/', edit_item_history, name="edit_item_history"),
+    path('get-all-item-history/', get_all_item_history_view, name="get_all_items_history_view"),
+    path('get-item-history-details/', get_item_history_details_view, name="get_item_history_details_view"),
+    path('archive-item-history/', archive_item_history, name="archive_item_history"),
+    path('unarchive-item-history/', unarchive_item_history, name="unarchive_item_history"),
+    path('get-all-archived-items-history/', get_all_archived_items_history_view, name="get_all_archived_items_history_view"),
+    path('delete-item-history/', delete_item_history, name="delete_item_history"),
+
+
+    path('add-department-item-request/', add_department_item_request, name="add_department_item_request"),
+    path('edit-department-item-request/', edit_department_item_request, name="edit_department_item_request"),
+    path('get-all-department-item-requests/', get_all_department_item_request_view, name="get_all_department_item_request_view"),
+    path('archive-department-item-request/', archive_department_item_request, name="archive_department_item_request"),
+    path('unarchive-department-item-request/', unarchive_department_item_request, name="unarchive_department_item_request"),
+    path('get-all-archived-department-item-requests/', get_all_archived_department_item_request_view, name="get_all_archive_department_item_request_view"),
+    path('delete-department-item-request/', delete_department_item_request, name="delete_department_item_request"),
+    path('change-department-item-request-status/', change_department_item_request_status, name="change_department_item_request_status"),
 
 ]
