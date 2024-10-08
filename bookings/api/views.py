@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.api.custom_jwt import CustomJWTAuthentication
-from bookings.api.serializers import AllBookingsSerializer, BookingDetailsSerializer, AllClientZonesSerializer, \
+from bookings.api.serializers import AllBookingsSerializer, AllZoneCategoriesSerializer, BookingDetailsSerializer, AllClientZonesSerializer, \
     AllClientPostSitesSerializer, ClientZoneDetailsSerializer, ClientPostSiteDetailsSerializer
 from bookings.models import Booking, BookDate, ForwardingList
 from clients.models import Client
@@ -212,6 +212,54 @@ def add_zone_category_view(request):
 
     return Response(payload)
 
+
+
+@api_view(['GET', ])
+@permission_classes([IsAuthenticated, ])
+@authentication_classes([CustomJWTAuthentication, ])
+def get_all_zone_categories(request):
+    payload = {}
+    data = {}
+    errors = {}
+
+    search_query = request.query_params.get('search', '')
+    page_number = request.query_params.get('page', 1)
+    page_size = 10
+
+    all_categories = ZoneCategory.objects.all().filter(is_archived=False)
+
+
+    if search_query:
+        all_categories = all_categories.filter(
+            Q(category_id__icontains=search_query) |
+            Q(name__icontains=search_query) 
+        )
+
+
+    paginator = Paginator(all_categories, page_size)
+
+    try:
+        paginated_categories = paginator.page(page_number)
+    except PageNotAnInteger:
+        paginated_categories = paginator.page(1)
+    except EmptyPage:
+        paginated_categories = paginator.page(paginator.num_pages)
+
+    all_categories_serializer = AllZoneCategoriesSerializer(paginated_categories, many=True)
+
+
+    data['zone_categories'] = all_categories_serializer.data
+    data['pagination'] = {
+        'page_number': paginated_categories.number,
+        'total_pages': paginator.num_pages,
+        'next': paginated_categories.next_page_number() if paginated_categories.has_next() else None,
+        'previous': paginated_categories.previous_page_number() if paginated_categories.has_previous() else None,
+    }
+
+    payload['message'] = "Successful"
+    payload['data'] = data
+
+    return Response(payload, status=status.HTTP_200_OK)
 
 
 

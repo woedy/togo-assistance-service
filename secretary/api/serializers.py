@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from accounts.api.serializers import ListAllUsersSerializer
 from clients.models import Client
-from secretary.models import Letter, Meeting, Secretary, LogBook
+from secretary.models import Letter, Meeting, MeetingReminder, Secretary, LogBook
 from security_team.models import FileManagement
 
 User = get_user_model()
@@ -73,10 +73,19 @@ class AllMeetingsSerializer(serializers.ModelSerializer):
 
 
 
+class MeetingReminderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MeetingReminder
+        fields = "__all__"
+
+
+
 class MeetingDetailsSerializer(serializers.ModelSerializer):
     attendees = ListAllUsersSerializer(many=True)
 
     meeting_attendees = ListAllUsersSerializer(many=True)
+    meeting_reminders = MeetingReminderSerializer(many=True)
 
 
     class Meta:

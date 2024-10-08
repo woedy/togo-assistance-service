@@ -4,7 +4,7 @@ from rest_framework import serializers
 from bookings.models import Booking, BookedGuard, ForwardingList, FieldReport, BookingEmail
 from clients.api.serializers import AllClientsSerializer
 from clients.models import Client
-from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate, PostOrder, SiteReport
+from post_sites.models import ClientZone, ClientPostSite, ClientZoneCoordinate, PostOrder, SiteReport, ZoneCategory
 from security_team.api.serializers import SecurityGuardDetailsSerializer
 
 User = get_user_model()
@@ -194,4 +194,11 @@ class AllSiteReportsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SiteReport
+        fields = "__all__"
+
+
+class AllZoneCategoriesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ZoneCategory
         fields = "__all__"

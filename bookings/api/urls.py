@@ -12,7 +12,7 @@ from bookings.api.site_report_views import get_all_unarchived_site_reports_view,
     delete_site_report, archive_site_report, get_all_site_reports_view, get_site_report_details_view, add_site_report, \
     edit_site_report
 from bookings.api.views import add_client_request_basic_info_view, add_client_request_basic_zone_view, \
-    add_client_request_basic_zone_sites_view, add_client_request_date_times_view, add_zone_category_view, delete_zone_category_view, get_all_client_requests, \
+    add_client_request_basic_zone_sites_view, add_client_request_date_times_view, add_zone_category_view, delete_zone_category_view, get_all_client_requests, get_all_zone_categories, \
     get_client_request_details, edit_client_request, edit_client_request_zone, edit_client_request_zone_site, \
     edit_client_request_datetime, archive_client_request, delete_client_request, unarchive_client_request, \
     get_all_client_request_zones, get_all_client_zone_sites, get_zone_details_view, archive_zone, \
@@ -31,6 +31,8 @@ urlpatterns = [
 
 
     path('add-zone-category/', add_zone_category_view, name="add_zone_category"),
+        path('get-all-zone-categories/', get_all_zone_categories, name="get_all_zone_categories"),
+
     path('delete-zone-category/', delete_zone_category_view, name="delete_zone_category"),
 
     path('forward-to/', forward_to_department,
